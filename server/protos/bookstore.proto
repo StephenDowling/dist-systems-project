@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package bookstore;
+
+service BookStore {
+  rpc totalCartValue (stream Book) returns (Cart) {}
+}
+
+message Book {
+  string name = 1;
+  string author = 2;
+  double price = 3;
+}
+
+message Cart {
+  int32 books = 1;
+  double price = 2;
+}
