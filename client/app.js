@@ -1,33 +1,32 @@
 var readlineSync = require('readline-sync')
 var grpc = require("@grpc/grpc-js")
 var protoLoader = require("@grpc/proto-loader")
-var PROTO_PATH = __dirname + "/protos/bookstore.proto"
+var PROTO_PATH = __dirname + "/protos/cart.proto"
 
 var packageDefinition = protoLoader.loadSync(PROTO_PATH)
-var bookstore_proto = grpc.loadPackageDefinition(packageDefinition).bookstore
-var client = new bookstore_proto.BookStore("0.0.0.0:40000", grpc.credentials.createInsecure());
+var cart_proto = grpc.loadPackageDefinition(packageDefinition).cart
+var client = new cart_proto.TotalCart("0.0.0.0:40000", grpc.credentials.createInsecure());
 
 var call = client.totalCartValue(function(error, response) {
 
   if(error){
-    console.log("An error occured")
+    console.log(error)
   } else{
-    console.log("You have ordered " + response.books + " books, the total cost is: " + response.price)
+    console.log("You have ordered " + response.items + " items, the total cost is: " + response.price + ". Your receipt is printed below: ")
+    console.log(response.receipt)
   }
 })
 
 while(true) {
-  var book_name = readlineSync.question("What is the book called? (q to Quit)")
-  if(book_name.toLowerCase() === 'q') {
+  var item_name = readlineSync.question("What is the item called? (q to Quit)")
+  if(item_name.toLowerCase() === 'q') {
     break
   }
-  var author = readlineSync.question("Who is the author of the book?")
-  var price = readlineSync.question("How much does the book cost?")
+  var price = readlineSync.question("How much does the item cost?")
 
   call.write({
     price: parseFloat(price),
-    author: author,
-    name: book_name
+    item_name: item_name
   })
 }
 

@@ -1,24 +1,27 @@
 var grpc = require("@grpc/grpc-js")
 var protoLoader = require("@grpc/proto-loader")
-var PROTO_PATH = __dirname + "/protos/bookstore.proto"
+var PROTO_PATH = __dirname + "/protos/cart.proto"
 var packageDefinition = protoLoader.loadSync(
   PROTO_PATH
 )
-var bookstore_proto = grpc.loadPackageDefinition(packageDefinition).bookstore
+var cart_proto = grpc.loadPackageDefinition(packageDefinition).cart
 
 function totalCartValue(call, callback) {
-  var books = 0
+  var items = 0
   var price = 0
+  var receipt = ""
 
   call.on('data', function(request) {
     price += request.price
-    books += 1
+    items += 1
+    receipt += request.item_name+", "+request.price+"\n"
   })
 
   call.on('end', function() {
     callback(null, {
       price: price,
-      books: books
+      items: items,
+      receipt: receipt
     })
   })
 
@@ -28,7 +31,7 @@ function totalCartValue(call, callback) {
 }
 
 var server = new grpc.Server()
-server.addService(bookstore_proto.BookStore.service, { totalCartValue: totalCartValue })
+server.addService(cart_proto.TotalCart.service, { totalCartValue: totalCartValue })
 server.bindAsync("0.0.0.0:40000", grpc.ServerCredentials.createInsecure(), function() {
   server.start()
 })

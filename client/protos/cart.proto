@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package cart;
+
+service TotalCart {
+  rpc totalCartValue (stream Item) returns (Cart) {}
+}
+
+message Item {
+  string name = 1;
+  double price = 2;
+}
+
+message Cart {
+  int32 items = 1;
+  double price = 2;
+  string receipt = 3;
+}
