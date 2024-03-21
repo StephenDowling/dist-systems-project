@@ -3,16 +3,16 @@ syntax = "proto3";
 package cart;
 
 service TotalCart {
-  rpc totalCartValue (stream Item) returns (Cart) {}
+  rpc totalCartValue (stream Items) returns (Cart) {}
 }
 
-message Item {
+message Items {
   string name = 1;
   double price = 2;
 }
 
 message Cart {
-  int32 items = 1;
+  int32 count = 1;
   double price = 2;
   string receipt = 3;
 }

@@ -10,23 +10,23 @@ var client = new cart_proto.TotalCart("0.0.0.0:40000", grpc.credentials.createIn
 var call = client.totalCartValue(function(error, response) {
 
   if(error){
-    console.log(error)
+    console.log("An error occured")
   } else{
-    console.log("You have ordered " + response.items + " items, the total cost is: " + response.price + ". Your receipt is printed below: ")
+    console.log("You have ordered " + response.count + " items, the total cost is: " + response.price + ". Your receipt is printed below: ")
     console.log(response.receipt)
   }
 })
 
 while(true) {
-  var item_name = readlineSync.question("What is the item called? (q to Quit)")
+  var item_name = readlineSync.question("What is the item called? (q to Quit): ")
   if(item_name.toLowerCase() === 'q') {
     break
   }
-  var price = readlineSync.question("How much does the item cost?")
+  var price = readlineSync.question("How much does the item cost?: ")
 
   call.write({
-    price: parseFloat(price),
-    item_name: item_name
+    name: item_name,
+    price: price
   })
 }
 

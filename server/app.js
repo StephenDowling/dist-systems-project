@@ -7,20 +7,20 @@ var packageDefinition = protoLoader.loadSync(
 var cart_proto = grpc.loadPackageDefinition(packageDefinition).cart
 
 function totalCartValue(call, callback) {
-  var items = 0
+  var count = 0
   var price = 0
   var receipt = ""
 
   call.on('data', function(request) {
     price += request.price
-    items += 1
-    receipt += request.item_name+", "+request.price+"\n"
+    count += 1
+    receipt += request.name+", €"+request.price+"\n"
   })
 
   call.on('end', function() {
     callback(null, {
+      count: count,
       price: price,
-      items: items,
       receipt: receipt
     })
   })
