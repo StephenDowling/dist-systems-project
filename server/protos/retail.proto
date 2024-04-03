@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package retail;
+
+service Cart {
+  rpc addToCart (stream AddRequest) returns (AddResponse) {}
+}
+
+message AddRequest {
+  string name = 1;
+  double price = 2;
+}
+
+message AddResponse {
+  string msg = 1;
+}
