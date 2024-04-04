@@ -4,6 +4,7 @@ package retail;
 
 service Cart {
   rpc addToCart (stream AddRequest) returns (AddResponse) {}
+  rpc removeFromCart (RemoveRequest) returns (RemoveResponse) {}
 }
 
 message AddRequest {
@@ -13,4 +14,12 @@ message AddRequest {
 
 message AddResponse {
   string msg = 1;
+}
+
+message RemoveRequest{
+  string name = 1;
+}
+
+message RemoveResponse{
+  string removeMsg = 1;
 }
