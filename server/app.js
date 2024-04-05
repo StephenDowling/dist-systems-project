@@ -13,18 +13,22 @@ var item = {
   name: "",
   price: 0
 }
+var total = 0
 
 function addToCart(call, callback) {
-  
+
     call.on('data', function(request) {
       var newItem = {
         name: request.name,
         price: request.price
       }
       cart.push(newItem)
+      total+=request.price
+
       msg = "item added succesfully"
       console.log("Added item: "+newItem.name)
       console.log(cart)
+      console.log("total is now "+total)
     })
 
     call.on('end', function() {
@@ -63,10 +67,16 @@ function removeFromCart(call, callback) {
 }
 
 
+function totalValue(call, callback) {
+  callback(null, {
+    total:total
+  });
+}
+
 
 
 var server = new grpc.Server()
-server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart })
+server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart, totalValue:totalValue })
 server.bindAsync("0.0.0.0:40000", grpc.ServerCredentials.createInsecure(), function() {
   server.start()
 })

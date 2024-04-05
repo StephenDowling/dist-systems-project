@@ -5,6 +5,7 @@ package retail;
 service Cart {
   rpc addToCart (stream AddRequest) returns (AddResponse) {}
   rpc removeFromCart (RemoveRequest) returns (RemoveResponse) {}
+  rpc totalValue (ValueRequest) returns (ValueResponse) {}
 }
 
 message AddRequest {
@@ -22,4 +23,12 @@ message RemoveRequest{
 
 message RemoveResponse{
   string removeMsg = 1;
+}
+
+message ValueRequest {
+
+}
+
+message ValueResponse {
+  float total = 1;
 }

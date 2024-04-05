@@ -1,4 +1,5 @@
 var readlineSync = require('readline-sync')
+var axios = require('axios')
 var grpc = require("@grpc/grpc-js")
 var protoLoader = require("@grpc/proto-loader")
 var PROTO_PATH = __dirname + "/protos/retail.proto"
@@ -28,7 +29,11 @@ function addToCart(){
     name: name,
     price: price
   })
-  call.end()
+
+}
+
+function finishedAdding() {
+    call.end();
 }
 
 function removeFromCart(){
@@ -54,16 +59,39 @@ function removeFromCart(){
   }
 }
 
+function totalValue(){
+  try{
+    client.totalValue({}, function(error, response){
+      try{
+        if(response.total){
+          console.log("Your total is "+response.total)
+        }
+        else{
+          console.log("There is nothing in your cart")
+        }
+      }
+      catch(e){
+        console.log(error)
+      }
+    })
+  }
+  catch(e){
+    console.log("Error occured")
+  }
+}
+
 
 while (true) {
-  var option = readlineSync.keyIn('Press "a" to add an item, "r" to remove an item, or "q" to finish: ', { limit: 'aqr' });
+  var option = readlineSync.keyIn('Press "a" to add an item, press "r" to remove an item and press "q" to quit : ', { limit: 'aqrt' });
 
   if (option === 'a') {
     addToCart();
   } else if(option === 'r'){
     removeFromCart();
-  } else if (option === 'q') {
-
+  } else if(option === 't'){
+    totalValue();
+  }else if (option === 'q') {
+    finishedAdding()
     break;
   }
 }
