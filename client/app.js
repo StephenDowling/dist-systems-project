@@ -8,33 +8,30 @@ var packageDefinition = protoLoader.loadSync(PROTO_PATH)
 var retail_proto = grpc.loadPackageDefinition(packageDefinition).retail
 var client = new retail_proto.Cart("0.0.0.0:40000", grpc.credentials.createInsecure());
 
-var call = client.addToCart(function(error, response) {
+function addToCart(call) {
+  while (true) {
+    var name = readlineSync.question("What is the name of the item? (Type 'q' to Quit): ");
+    if (name.toLowerCase() === "q") {
+      break;
+    }
+    var price = parseFloat(readlineSync.question("How much does the item cost?: "));
 
-  if(error){
-    console.log("An error occured: "+error)
-  } else{
-    console.log("Response: " + response.msg)
+    call.write({
+      name: name,
+      price: price
+    });
   }
 
-})
-
-
-
-
-function addToCart(){
-  var name = readlineSync.question("What is the name of the item?: ")
-  var price = parseFloat(readlineSync.question("How much does the item cost?: "))
-
-  call.write({
-    name: name,
-    price: price
-  })
-
+  call.end();
 }
 
-function finishedAdding() {
-     call.end();
-}
+var call = client.addToCart(function(error, response) {
+  if (error) {
+    console.error("An error occurred: " + error);
+  } else {
+    console.log("Response: " + response.msg);
+  }
+});
 
 function removeFromCart(){
   var name = readlineSync.question("What is the name of the item you wish to remove?: ")
@@ -59,26 +56,19 @@ function removeFromCart(){
   }
 }
 
-function totalValue(){
+function totalValue() {
+  client.totalValue({}, function(error, response) {
+    if (error) {
+      console.error("An error occurred:", error);
+      return;
+    }
 
-  try{
-    client.totalValue({}, function(error, response){
-      try{
-        if(response.total){
-          console.log("Your total is "+response.total)
-        }
-        else{
-          console.log("There is nothing in your cart")
-        }
-      }
-      catch(e){
-        console.log(error)
-      }
-    })
-  }
-  catch(e){
-    console.log("Error occured")
-  }
+    if (response.total) {
+      console.log("Your total is " + response.total);
+    } else {
+      console.log("There is nothing in your cart");
+    }
+  });
 }
 
 function applyDiscount(){
@@ -141,7 +131,7 @@ function processPayment(){
 
 
   if(action === 1) {
-    addToCart();
+    addToCart(call);
   }
   if(action === 2) {
     removeFromCart();
@@ -156,7 +146,7 @@ function processPayment(){
     processPayment();
   }
   if(action === 6) {
-    console.log("Not supported yet")
+    process.exit();
   }
 
 

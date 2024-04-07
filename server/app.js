@@ -24,8 +24,6 @@ function addToCart(call, callback) {
       }
       cart.push(newItem)
       total+=request.price
-
-      msg = "item added succesfully"
       console.log("Added item: "+newItem.name)
       console.log(cart)
       console.log("total is now "+total)
@@ -33,7 +31,7 @@ function addToCart(call, callback) {
 
     call.on('end', function() {
       callback(null, {
-        msg: msg
+        msg: "item(s) added succesfully"
       })
     })
 
@@ -51,9 +49,11 @@ function removeFromCart(call, callback) {
   for (var i = 0; i < cart.length; i++) {
     if (request.name.toLowerCase() === cart[i].name.toLowerCase()) {
       // Remove the item from the cart
-      cart.splice(i, 1);
+      total = total-cart[i].price;
       found = true;
-      total = total-request.price
+      cart.splice(i, 1);
+
+
       console.log(cart); //print the cart to the console for clarity
       break; // Exit the loop after removing the item
     }
@@ -75,9 +75,17 @@ function totalValue(call, callback) {
 }
 
 function applyDiscount(call, callback) {
-  total = total*0.9
-  total = Math.round(total)
-  var discountConf = "Your new total is "+total
+  var discountConf
+  if(total == 0){
+    discountConf = "There is nothing in your cart";
+  }
+  else{
+    total = total*0.9
+    total = Math.round((total + Number.EPSILON) * 100) / 100
+    console.log(total)
+    discountConf = "10% has been applied! Your new total is "+total
+  }
+
   callback(null, {
     total:total,
     discountConf: discountConf
