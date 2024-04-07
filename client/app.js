@@ -33,7 +33,7 @@ function addToCart(){
 }
 
 function finishedAdding() {
-    call.end();
+     call.end();
 }
 
 function removeFromCart(){
@@ -60,6 +60,7 @@ function removeFromCart(){
 }
 
 function totalValue(){
+
   try{
     client.totalValue({}, function(error, response){
       try{
@@ -80,18 +81,104 @@ function totalValue(){
   }
 }
 
+function applyDiscount(){
+  try{
+    client.applyDiscount({}, function(error, response){
+      try{
+          console.log(response.discountConf)
+        }
+        catch(e){
+          console.log(error)
+        }
+      }
 
-while (true) {
-  var option = readlineSync.keyIn('Press "a" to add an item, press "r" to remove an item and press "q" to quit : ', { limit: 'aqrt' });
-
-  if (option === 'a') {
-    addToCart();
-  } else if(option === 'r'){
-    removeFromCart();
-  } else if(option === 't'){
-    totalValue();
-  }else if (option === 'q') {
-    finishedAdding()
-    break;
+    )
+  }
+  catch(e){
+    console.log("Error occured applying discount")
   }
 }
+
+function processPayment(){
+  var cardNo = readlineSync.question("Please enter your 16 digit card number: ")
+  try{
+    client.processPayment({
+      cardNo:cardNo
+    }, function(error, response){
+      try{
+        if(response.paymentConfirmation){
+          console.log(response.paymentConfirmation)
+        }
+        else{
+          console.log(response.paymentConfirmation)
+        }
+      }
+      catch(e){
+        console.log(e)
+        console.log("server error")
+      }
+
+    } )
+  }
+  catch(e){
+    console.log("Error occured")
+    console.log(e);
+  }
+}
+
+//1234567812345678
+  var action = readlineSync.question(
+    "What would you like to do?\n"
+    + "\t 1 add items to the cart\n"
+    + "\t 2 remove an item from the cart\n"
+    + "\t 3 get the total value of your cart\n"
+    + "\t 4 apply a 10% discount to your cart\n"
+    + "\t 5 process card payment\n"
+    + "\t 6 quit the application\n"
+  )
+
+  action = parseInt(action)
+
+
+  if(action === 1) {
+    addToCart();
+  }
+  if(action === 2) {
+    removeFromCart();
+  }
+  if(action === 3) {
+    totalValue();
+  }
+  if(action === 4) {
+    applyDiscount();
+  }
+  if(action === 5) {
+    processPayment();
+  }
+  if(action === 6) {
+    console.log("Not supported yet")
+  }
+
+
+
+
+
+
+
+// while (true) {
+//   var option = readlineSync.keyIn('Press "a" to add an item, press "r" to remove an item and press "q" to quit : ', { limit: 'aqrtd' });
+//
+//   if (option === 'a') {
+//     addToCart();
+//   } else if(option === 'r'){
+//     removeFromCart();
+//   } else if(option === 't'){
+//     totalValue();
+//   } else if(option === 'd'){
+//     applyDiscount();
+//   }
+//   else if (option === 'q') {
+//     finishedAdding()
+//     break;
+//   }
+// }

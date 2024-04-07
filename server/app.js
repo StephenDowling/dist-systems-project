@@ -53,6 +53,7 @@ function removeFromCart(call, callback) {
       // Remove the item from the cart
       cart.splice(i, 1);
       found = true;
+      total = total-request.price
       console.log(cart); //print the cart to the console for clarity
       break; // Exit the loop after removing the item
     }
@@ -73,10 +74,38 @@ function totalValue(call, callback) {
   });
 }
 
+function applyDiscount(call, callback) {
+  total = total*0.9
+  total = Math.round(total)
+  var discountConf = "Your new total is "+total
+  callback(null, {
+    total:total,
+    discountConf: discountConf
+  })
+}
+
+function processPayment(call, callback){
+  var paymentConfirmation;
+  const request = call.request;
+
+  if(request.cardNo.length!=16){
+    paymentConfirmation = "Your card number must be 16 digits"
+  }
+  else{
+    paymentConfirmation = "Congratulations, your payment has been processed. Your cart is now empty. Thank you for shopping with us!"
+    total = 0;
+    cart = [];
+    console.log(cart)
+  }
+  callback(null, {
+    paymentConfirmation: paymentConfirmation
+  })
+}
+
 
 
 var server = new grpc.Server()
-server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart, totalValue:totalValue })
+server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart, totalValue:totalValue, applyDiscount: applyDiscount, processPayment: processPayment })
 server.bindAsync("0.0.0.0:40000", grpc.ServerCredentials.createInsecure(), function() {
   server.start()
 })
