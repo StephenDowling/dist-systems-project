@@ -1,10 +1,39 @@
-var grpc = require("@grpc/grpc-js")
-var protoLoader = require("@grpc/proto-loader")
-var PROTO_PATH = __dirname + "/protos/retail.proto"
-var packageDefinition = protoLoader.loadSync(
-  PROTO_PATH
-)
-var retail_proto = grpc.loadPackageDefinition(packageDefinition).retail
+const express = require('express');
+const path = require('path');
+const grpc = require("@grpc/grpc-js");
+const protoLoader = require("@grpc/proto-loader");
+
+const app = express();
+
+// Load protobuf definition
+const PROTO_PATH = path.join(__dirname, "protos/retail.proto");
+const packageDefinition = protoLoader.loadSync(PROTO_PATH);
+const retail_proto = grpc.loadPackageDefinition(packageDefinition).retail;
+
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Parse JSON request bodies
+app.use(express.json());
+
+// Define route for handling POST requests to /totalValue
+app.get('/totalValue', (req, res) => {
+  // You can access the request body here
+  const requestData = req.body;
+
+  // Call your gRPC function totalValue here
+  totalValue(requestData, (error, response) => {
+    if (error) {
+      res.status(500).send('Error getting total value of the cart');
+    } else {
+      res.status(200).json(response);
+    }
+  });
+});
+
+app.listen(3000, () => {
+  console.log("App listening on port 3000")
+})
 
 var msg = ""
 var removeMsg = ""

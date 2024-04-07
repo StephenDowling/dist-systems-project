@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="mystyle.css">
+</head>
+<body>
+
+<h1>Shopping Cart</h1>
+<p>Welcome to the shopping cart!</p>
+<p>Please select from the services below: </p>
+<div class="container">
+  <div class="vertical-center">
+    <!-- Add an ID to the button for easier reference -->
+    <button id="totalValuebutton" type="button" name="add">Total value</button>
+  </div>
+</div>
+
+<script>
+  // Add event listener to the button
+  var button = document.getElementById('totalValuebutton');
+  button.addEventListener('click', function() {
+            // Change the window location to the desired URL
+            window.location.href = 'http://localhost:3000/totalValue';
+        });
+  // document.getElementById("totalValuebutton").addEventListener("click", function() {
+  //
+  //   // Check if the product name and price are valid
+  //     // Make a POST request to the /addToCart endpoint with the product data
+  //     fetch('http://localhost:3000/totalValue', {
+  //       method: 'GET',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({
+  //         total:total
+  //       })
+  //     })
+  //     .then(response => {
+  //       if (!response.ok) {
+  //         throw new Error('Failed to retrieve total value');
+  //       }
+  //       return response.json();
+  //     })
+  //     .then(data => {
+  //       // Handle successful response
+  //       console.log(data); // Log the response data if needed
+  //     })
+  //     .catch(error => {
+  //       // Handle errors
+  //       console.error('Error retrieving total value:', error);
+  //       console.log(error)
+  //     });
+  //
+  // });
+</script>
+
+</body>
+</html>
