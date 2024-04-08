@@ -16,11 +16,21 @@
 
   <button id="submitButton" type="button">Add</button> <!-- Note: type="button" to prevent default form submission -->
 </form>
+<form id="removeForm" action="/removeFromCart" method="delete">
+  <input id="removeInputName" name="itemName" autocomplete="off" placeholder="Item Name" required />
+
+  <button id="removeButton" type="button">Remove</button> <!-- Note: type="button" to prevent default form submission -->
+</form>
   <div class="vertical-center">
     <!-- Add an ID to the button for easier reference -->
     <button id="totalValuebutton" type="button" name="add">Total Value</button>
     <button id="applyDiscountbutton" type="button" name="add">Apply Discount</button>
   </div>
+<form id="paymentForm" action="/processPayment" method="delete">
+  <input id="cardNo" name="cardNo" autocomplete="off" placeholder="Card Number" required />
+
+  <button id="paymentButton" type="button">Pay Now</button> <!-- Note: type="button" to prevent default form submission -->
+</form>
 </div>
 
 <script>
@@ -35,8 +45,8 @@
             // Change the window location to the desired URL
             window.location.href = 'http://localhost:3000/applyDiscount';
         });
-
-        document.getElementById('submitButton').addEventListener('click', function(event) {
+//add to cart function
+document.getElementById('submitButton').addEventListener('click', function(event) {
            event.preventDefault(); // Prevent default form submission behavior
            const itemName = document.getElementById('inputName').value;
            const itemPrice = document.getElementById('inputPrice').value;
@@ -73,38 +83,78 @@
               console.error('Please fill in both item name and price');
            }
         });
+//remove from cart function
+document.getElementById('removeButton').addEventListener('click', function(event) {
+   event.preventDefault(); // Prevent default form submission behavior
+   const itemName = document.getElementById('removeInputName').value;
 
+   // Ensure both itemName and itemPrice are provided
+   if (itemName) {
+      // Send the form data to the server using fetch or another method
+      fetch('/removeFromCart', {
+         method: 'DELETE',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+            itemName: itemName
+         })
+      })
+      .then(response => {
+         // Handle response from server
+         if (response.ok) {
+            // Handle success
+            console.log('Item removed from cart successfully');
+         } else {
+            // Handle error
+            console.error('Failed to remove item from cart');
+         }
+      })
+      .catch(error => {
+         // Handle network errors
+         console.error('Error:', error);
+      });
+   } else {
+      // Inform user to fill in both item name and price
+      console.error('Please fill in item name');
+   }
+});
+//process payment function
+document.getElementById('paymentButton').addEventListener('click', function(event) {
+   event.preventDefault(); // Prevent default form submission behavior
+   const cardNo = document.getElementById('cardNo').value;
 
-  // document.getElementById("totalValuebutton").addEventListener("click", function() {
-  //
-  //   // Check if the product name and price are valid
-  //     // Make a POST request to the /addToCart endpoint with the product data
-  //     fetch('http://localhost:3000/totalValue', {
-  //       method: 'GET',
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //       body: JSON.stringify({
-  //         total:total
-  //       })
-  //     })
-  //     .then(response => {
-  //       if (!response.ok) {
-  //         throw new Error('Failed to retrieve total value');
-  //       }
-  //       return response.json();
-  //     })
-  //     .then(data => {
-  //       // Handle successful response
-  //       console.log(data); // Log the response data if needed
-  //     })
-  //     .catch(error => {
-  //       // Handle errors
-  //       console.error('Error retrieving total value:', error);
-  //       console.log(error)
-  //     });
-  //
-  // });
+   // Ensure both itemName and itemPrice are provided
+   if (cardNo) {
+      // Send the form data to the server using fetch or another method
+      fetch('/processPayment', {
+         method: 'DELETE',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({
+            cardNo: cardNo
+         })
+      })
+      .then(response => {
+         // Handle response from server
+         if (response.ok) {
+            // Handle success
+            console.log('Payment processed');
+         } else {
+            // Handle error
+            console.error('Failed to process payment');
+         }
+      })
+      .catch(error => {
+         // Handle network errors
+         console.error('Error:', error);
+      });
+   } else {
+      // Inform user to fill in both item name and price
+      console.error('Please enter card number');
+   }
+});
 </script>
 
 </body>

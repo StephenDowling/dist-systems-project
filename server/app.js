@@ -42,6 +42,19 @@ app.post('/addToCart', (req, res) => {
   }
 });
 
+//removeFromCart
+app.delete('/removeFromCart', (req, res) => {
+  const itemName = req.body.itemName;
+  console.log("item to remove = "+itemName);
+  removeFromCart(itemName, (error, response) => {
+    if (error) {
+      res.status(500).send('Error removing item from the cart');
+    } else {
+      res.status(200).send('Item removed from the cart');
+    }
+  });
+})
+
 // Define route for handling GET requests to /totalValue
 app.get('/totalValue', (req, res) => {
   // You can access the request body here
@@ -71,6 +84,19 @@ app.get('/applyDiscount', (req, res) => {
     }
   });
 });
+
+app.delete('/processPayment', (req, res) => {
+  const cardNo = req.body.cardNo;
+  console.log("card number to process payment "+cardNo)
+
+  processPayment(cardNo, (error, response) => {
+    if (error) {
+      res.status(500).send('Error processing payment');
+    } else {
+      res.status(200).send('Payment processed');
+    }
+  })
+})
 
 
 app.listen(3000, () => {
@@ -111,14 +137,22 @@ function addToCart(request, call, callback) {
     // // })
 }
 
-function removeFromCart(call, callback) {
+function removeFromCart(request, call, callback) {
   // Extract the request object from the gRPC call
-  const request = call.request;
+  //const request = call.request;
+  console.log("request = "+request)
+  //console.log("name = "+request.name)
+
+  // Check if request is defined and has a 'name' property
+  if (!request) {
+    callback(new Error('Invalid request. Missing item name.'));
+    return;
+  }
 
   // Check if the item is in the cart
   var found = false;
   for (var i = 0; i < cart.length; i++) {
-    if (request.name.toLowerCase() === cart[i].name.toLowerCase()) {
+    if (request.toLowerCase() === cart[i].name.toLowerCase()) {
       // Remove the item from the cart
       total = total-cart[i].price;
       found = true;
@@ -131,13 +165,13 @@ function removeFromCart(call, callback) {
   }
 
   // Prepare the response message
-  var responseMsg = found ? request.name + " was removed successfully" : request.name + " was not found in the cart";
+  var responseMsg = found ? request + " was removed successfully" : request+ " was not found in the cart";
+  console.log(responseMsg)
   // Send the response back to the client
-  callback(null, {
-    removeMsg: responseMsg
-  });
+  // callback(null, {
+  //   removeMsg: responseMsg
+  // });
 }
-
 
 function totalValue(call, callback) {
   callback(null, {
@@ -163,11 +197,11 @@ function applyDiscount(call, callback) {
   })
 }
 
-function processPayment(call, callback){
+function processPayment(request, call, callback){
   var paymentConfirmation;
-  const request = call.request;
+  //const request = call.request;
 
-  if(request.cardNo.length!=16){
+  if(request.length!=16){
     paymentConfirmation = "Your card number must be 16 digits"
   }
   else{
@@ -175,10 +209,11 @@ function processPayment(call, callback){
     total = 0;
     cart = [];
     console.log(cart)
+    console.log(paymentConfirmation)
   }
-  callback(null, {
-    paymentConfirmation: paymentConfirmation
-  })
+  // callback(null, {
+  //   paymentConfirmation: paymentConfirmation
+  // })
 }
 
 
