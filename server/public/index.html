@@ -9,19 +9,72 @@
 <p>Welcome to the shopping cart!</p>
 <p>Please select from the services below: </p>
 <div class="container">
+  <ul id="items"></ul>
+<form id="form" action="/addToCart" method="post">
+  <input id="inputName" name="itemName" autocomplete="off" placeholder="Item Name" required />
+  <input id="inputPrice" name="itemPrice" autocomplete="off" placeholder="Price" required />
+
+  <button id="submitButton" type="button">Add</button> <!-- Note: type="button" to prevent default form submission -->
+</form>
   <div class="vertical-center">
     <!-- Add an ID to the button for easier reference -->
-    <button id="totalValuebutton" type="button" name="add">Total value</button>
+    <button id="totalValuebutton" type="button" name="add">Total Value</button>
+    <button id="applyDiscountbutton" type="button" name="add">Apply Discount</button>
   </div>
 </div>
 
 <script>
   // Add event listener to the button
-  var button = document.getElementById('totalValuebutton');
-  button.addEventListener('click', function() {
+  var totalValueButton = document.getElementById('totalValuebutton');
+  var applyDiscountbutton = document.getElementById('applyDiscountbutton');
+  totalValueButton.addEventListener('click', function() {
             // Change the window location to the desired URL
             window.location.href = 'http://localhost:3000/totalValue';
         });
+  applyDiscountbutton.addEventListener('click', function() {
+            // Change the window location to the desired URL
+            window.location.href = 'http://localhost:3000/applyDiscount';
+        });
+
+        document.getElementById('submitButton').addEventListener('click', function(event) {
+           event.preventDefault(); // Prevent default form submission behavior
+           const itemName = document.getElementById('inputName').value;
+           const itemPrice = document.getElementById('inputPrice').value;
+
+           // Ensure both itemName and itemPrice are provided
+           if (itemName && itemPrice) {
+              // Send the form data to the server using fetch or another method
+              fetch('/addToCart', {
+                 method: 'POST',
+                 headers: {
+                    'Content-Type': 'application/json'
+                 },
+                 body: JSON.stringify({
+                    itemName: itemName,
+                    itemPrice: itemPrice
+                 })
+              })
+              .then(response => {
+                 // Handle response from server
+                 if (response.ok) {
+                    // Handle success
+                    console.log('Item added to cart successfully');
+                 } else {
+                    // Handle error
+                    console.error('Failed to add item to cart');
+                 }
+              })
+              .catch(error => {
+                 // Handle network errors
+                 console.error('Error:', error);
+              });
+           } else {
+              // Inform user to fill in both item name and price
+              console.error('Please fill in both item name and price');
+           }
+        });
+
+
   // document.getElementById("totalValuebutton").addEventListener("click", function() {
   //
   //   // Check if the product name and price are valid

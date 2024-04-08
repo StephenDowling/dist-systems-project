@@ -16,7 +16,33 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Parse JSON request bodies
 app.use(express.json());
 
-// Define route for handling POST requests to /totalValue
+// Define route for handling GET requests to /totalValue
+app.post('/addToCart', (req, res) => {
+  // You can access the request body here
+
+  const itemName = req.body.itemName;
+  const itemPrice = req.body.itemPrice;
+  console.log("Request.body = "+req.body)
+  console.log("Request.body.itemName = "+req.body.itemName)
+  console.log("Request.body.price = "+req.body.itemPrice)
+  // Call your gRPC function totalValue here
+  // Check if itemName and itemPrice are defined
+  if (itemName && itemPrice) {
+    // Call your gRPC function addToCart here with itemName and itemPrice
+    addToCart({ name: itemName, price: itemPrice }, (error, response) => {
+      if (error) {
+        res.status(500).send('Error adding item to the cart');
+      } else {
+        res.status(200).json(response);
+      }
+    });
+  } else {
+    // Respond with a 400 Bad Request if itemName or itemPrice is missing
+    res.status(400).send('Item name or price is missing');
+  }
+});
+
+// Define route for handling GET requests to /totalValue
 app.get('/totalValue', (req, res) => {
   // You can access the request body here
   const requestData = req.body;
@@ -31,6 +57,22 @@ app.get('/totalValue', (req, res) => {
   });
 });
 
+// Define route for handling GET requests to /applyDiscount
+app.get('/applyDiscount', (req, res) => {
+  // You can access the request body here
+  const requestData = req.body;
+
+  // Call your gRPC function applyDiscount here
+  applyDiscount(requestData, (error, response) => {
+    if (error) {
+      res.status(500).send('Error applying discount to this cart');
+    } else {
+      res.status(200).json(response);
+    }
+  });
+});
+
+
 app.listen(3000, () => {
   console.log("App listening on port 3000")
 })
@@ -44,29 +86,29 @@ var item = {
 }
 var total = 0
 
-function addToCart(call, callback) {
+function addToCart(request, call, callback) {
 
-    call.on('data', function(request) {
+    // call.on('data', function(request) {
       var newItem = {
         name: request.name,
         price: request.price
       }
       cart.push(newItem)
-      total+=request.price
+      total+=parseFloat(request.price)
       console.log("Added item: "+newItem.name)
       console.log(cart)
       console.log("total is now "+total)
-    })
+    //})
 
-    call.on('end', function() {
-      callback(null, {
-        msg: "item(s) added succesfully"
-      })
-    })
+    // // call.on('end', function() {
+    //   callback(null, {
+    //     msg: "item(s) added succesfully"
+    //   })
+    // // })
 
-    call.on('error', function(e) {
-      console.log("An error occured")
-    })
+    // // call.on('error', function(e) {
+    //   console.log("An error occured")
+    // // })
 }
 
 function removeFromCart(call, callback) {
