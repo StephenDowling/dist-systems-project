@@ -8,6 +8,8 @@ var packageDefinition = protoLoader.loadSync(PROTO_PATH)
 var retail_proto = grpc.loadPackageDefinition(packageDefinition).retail
 var client = new retail_proto.Cart("0.0.0.0:40000", grpc.credentials.createInsecure());
 
+//retail service
+
 function addToCart(call) {
   while (true) {
     var name = readlineSync.question("What is the name of the item? (Type 'q' to Quit): ");
@@ -148,27 +150,3 @@ function processPayment(){
   if(action === 6) {
     process.exit();
   }
-
-
-
-
-
-
-
-// while (true) {
-//   var option = readlineSync.keyIn('Press "a" to add an item, press "r" to remove an item and press "q" to quit : ', { limit: 'aqrtd' });
-//
-//   if (option === 'a') {
-//     addToCart();
-//   } else if(option === 'r'){
-//     removeFromCart();
-//   } else if(option === 't'){
-//     totalValue();
-//   } else if(option === 'd'){
-//     applyDiscount();
-//   }
-//   else if (option === 'q') {
-//     finishedAdding()
-//     break;
-//   }
-// }

@@ -7,8 +7,11 @@ const app = express();
 
 // Load protobuf definition
 const PROTO_PATH = path.join(__dirname, "protos/retail.proto");
+const PROTO_PATH_QUERY = path.join(__dirname, "protos/query.proto");
 const packageDefinition = protoLoader.loadSync(PROTO_PATH);
+const packageDefinitionQuery = protoLoader.loadSync(PROTO_PATH_QUERY);
 const retail_proto = grpc.loadPackageDefinition(packageDefinition).retail;
+const query_proto = grpc.loadPackageDefinition(packageDefinitionQuery).query;
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -16,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Parse JSON request bodies
 app.use(express.json());
 
-// Define route for handling GET requests to /totalValue
+// addToCart
 app.post('/addToCart', (req, res) => {
   // You can access the request body here
 
@@ -85,6 +88,7 @@ app.get('/applyDiscount', (req, res) => {
   });
 });
 
+// process payment
 app.delete('/processPayment', (req, res) => {
   const cardNo = req.body.cardNo;
   console.log("card number to process payment "+cardNo)
@@ -102,6 +106,8 @@ app.delete('/processPayment', (req, res) => {
 app.listen(3000, () => {
   console.log("App listening on port 3000")
 })
+
+//cart service
 
 var msg = ""
 var removeMsg = ""
@@ -216,10 +222,112 @@ function processPayment(request, call, callback){
   // })
 }
 
+//query service
 
+var allergyData = [
+  {
+    allergy:"nuts",
+    products: "Cookies, Cereals, Sauces"
+  },
+  {
+    allergy:"gluten",
+    products: "Beer, Bread, Cake"
+  },
+  {
+    allergy:"eggs",
+    products: "Mayonnaise, Processed meat, Baked goods"
+  },
+  {
+    allergy:"fish",
+    products: "Sushi, Salad dressing, Fish oil"
+  },
+  {
+    allergy:"shellfish",
+    products: "Crab, Lobster, Shrimp"
+  }
+]
+
+function priceLookUp(call, callback){
+  var price, priceMsg;
+  var name = call.request.name;
+  console.log(name);
+  if(name.toLowerCase() == "bread"){
+    price = 3.00;
+    priceMsg = "The cost of "+name+" is "+price;
+  } else if(name.toLowerCase() == "tea"){
+    price = 1.50;
+    priceMsg = "The cost of "+name+" is "+price;
+  } else if(name.toLowerCase() == "milk"){
+    price = 2.00
+    priceMsg = "The cost of "+name+" is "+price;
+  } else{
+    priceMsg = "Unable to locate product, please try a different product name"
+  }
+
+  console.log(priceMsg);
+  callback(null, {
+    priceMsg: priceMsg
+  })
+}
+
+function findProduct(call, callback){
+  var location;
+  var name = call.request.name;
+  console.log(name);
+  if(name.toLowerCase() == "bread"){
+    location = name+" is located on aisle 1"
+  } else if(name.toLowerCase() == "tea"){
+    location = name+" is located on aisle 2"
+  } else if(name.toLowerCase() == "milk"){
+    location = name+" is located on aisle 3"
+  } else{
+    location = "Unable to locate product, please try a different product name"
+  }
+
+  console.log(location);
+  callback(null, {
+    location: location
+  })
+}
+
+function allergyInfo(call, callback){
+  for(var i = 0;i < allergyData.length; i++){
+    call.write({
+      allergy: allergyData[i].allergy,
+      products: allergyData[i].products
+    })
+  }
+  call.end()
+}
+
+
+var clients = {}
+
+function contactSupport(call){
+    call.on('data', function(chat_message){
+      if(!(chat_message.name in clients)){
+        clients[chat_message.name] = {
+          name: chat_message.name,
+          call: call}
+      }
+      for(var client in clients){
+        clients[client].call.write({
+          name: chat_message.name,
+          message: chat_message.message
+        })
+      }
+    })
+    call.on('end', function(){
+      call.end();
+    })
+    call.on('error', function(e){
+      console.log(e)
+    })
+}
 
 var server = new grpc.Server()
 server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart, totalValue:totalValue, applyDiscount: applyDiscount, processPayment: processPayment })
+server.addService(query_proto.Query.service, {priceLookUp: priceLookUp, findProduct: findProduct, allergyInfo: allergyInfo, contactSupport: contactSupport})
 server.bindAsync("0.0.0.0:40000", grpc.ServerCredentials.createInsecure(), function() {
   server.start()
 })
