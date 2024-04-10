@@ -51,15 +51,22 @@ wss.on('connection', function(ws) {
         });
         // Parse message as JSON
         try {
-            const data = JSON.parse(message);
-
+            const data = message;
+            const parsedMessage = Buffer.from(data)
+            const messageString = parsedMessage.toString('utf8');
+            console.log('Parsed message:', messageString);
             if (data.method === 'allergyInfo') {
                 // Call the appropriate gRPC method
                 allergyInfo(data.parameters);
             }
 
+            if (data.method === 'queueTime') {
+                // Call the appropriate gRPC method
+                queueTime(data.parameters);
+            }
+
             // Handle the message
-            console.log('Parsed message:', data);
+
 
             // Example: Make gRPC call based on the message
             if (data.method === 'contactSupport') {
@@ -197,6 +204,45 @@ app.get('/findProduct', (req, res) => {
       console.error('Error:', error);
       // Send error response if needed
       res.status(500).send('Error processing findProduct');
+    } else {
+      // Send response with priceMsg
+      res.status(200).json(response);
+    }
+  });
+});
+
+//unlock trolley
+app.get('/unlockTrolley', (req, res) => {
+  // You can access the request query parameters here
+  const trolleyNumber = req.query.trolleyNumber;
+  console.log("app.get() " + trolleyNumber);
+
+  unlockTrolley(trolleyNumber, (error, response) => {
+    if (error) {
+      // Handle error
+      console.error('Error:', error);
+      // Send error response if needed
+      res.status(500).send('Error processing unlockTrolley');
+    } else {
+      // Send response with priceMsg
+      res.status(200).json(response);
+    }
+  });
+});
+
+//locate Car
+app.get('/locateCar', (req, res) => {
+  // You can access the request query parameters here
+  const carReg = req.query.carReg;
+
+  console.log("app.get() " + carReg);
+
+  locateCar(carReg, (error, response) => {
+    if (error) {
+      // Handle error
+      console.error('Error:', error);
+      // Send error response if needed
+      res.status(500).send('Error processing locateCar');
     } else {
       // Send response with priceMsg
       res.status(200).json(response);
@@ -382,7 +428,16 @@ var allergyData = [
     products: "Crab, Lobster, Shrimp"
   }
 ]
+const shopTills = [
+    { tillNumber: 1, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 2, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 3, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 4, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 5, waitTime: Math.floor(Math. random()*10) }
+
+];
 var allergyDataString = JSON.stringify(allergyData);
+var shopTillsString = JSON.stringify(shopTills);
 
 function priceLookUp(call, callback) {
   const itemName = call
@@ -436,21 +491,7 @@ function allergyInfo(call, callback) {
 
 }
 
-function sendDataToClients() {
-  wss.clients.forEach(function each(client) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(allergyDataString);
-      console.log(JSON.stringify(allergyDataString))
-    }
-  });
-}
 
-sendDataToClients(allergyData)
-
-setTimeout(() => {
-  const randomData = allergyData.toString();
-  sendDataToClients(randomData);
-}, 5000);
 
 var clients = {}
 
@@ -492,14 +533,7 @@ function customerFeedback(call, callback){
   })
 }
 
-const shopTills = [
-    { tillNumber: 1, waitTime: Math.floor(Math. random()*10) },
-    { tillNumber: 2, waitTime: Math.floor(Math. random()*10) },
-    { tillNumber: 3, waitTime: Math.floor(Math. random()*10) },
-    { tillNumber: 4, waitTime: Math.floor(Math. random()*10) },
-    { tillNumber: 5, waitTime: Math.floor(Math. random()*10) }
 
-];
 
 function queueTime(call, callback){
 
@@ -513,12 +547,11 @@ function queueTime(call, callback){
 }
 
 function unlockTrolley(call, callback){
-
-  var trolleyNumber = call.request.trolleyNumber
-  if(trolleyNumber > 0 && trolleyNumber < 100){
-    unlockMsg = "Trolley is unlocked, happy shopping!"
-  } else{
+  var trolleyNumber = call
+  if(isNaN(trolleyNumber)){
     unlockMsg = "This trolley is unavailable, please try a different trolley number"
+  } else{
+    unlockMsg = "Trolley is unlocked, happy shopping!"
   }
   callback(null, {
     unlockMsg:unlockMsg
@@ -527,8 +560,8 @@ function unlockTrolley(call, callback){
 
 function locateCar(call, callback){
 
-  var carReg = call.request.carReg
-  var parkingSpace
+  var carReg = call
+  console.log(carReg)
   if(carReg > 0 && carReg < 100){
     parkingSpace = "You are parked in space number 23"
   }
@@ -545,6 +578,36 @@ function locateCar(call, callback){
     parkingSpace:parkingSpace
   })
 }
+
+function sendDataToClients() {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(allergyDataString);
+      console.log(JSON.stringify(allergyDataString))
+    }
+  });
+}
+
+function sendQueuesToClients() {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(shopTillsString);
+      console.log(JSON.stringify(shopTillsString))
+    }
+  });
+}
+// sendDataToClients(shopTills)
+// sendDataToClients(allergyData)
+sendDataToClients();
+sendQueuesToClients();
+
+setTimeout(() => {
+  const randomData = allergyData.toString();
+  const shopTillsStringAgain = shopTills.toString();
+  sendDataToClients(randomData);
+  sendDataToClients(shopTillsStringAgain);
+  sendQueuesToClients();
+}, 5000);
 
 var server = new grpc.Server()
 server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart, totalValue:totalValue, applyDiscount: applyDiscount, processPayment: processPayment })

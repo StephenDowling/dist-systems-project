@@ -48,7 +48,7 @@
 </div>
 <div id="data-container">
   <ul id="allergyList"></ul>
-  <button id="startStreamButton">Start Stream</button>
+  <button id="startStreamButton" onclick="startStream()">Start Stream</button>
   <div id="result"></div>
 </div>
 <div class="chatBox">
@@ -57,6 +57,7 @@
   <form id="form" actions="">
     <input id= "nameInput" autocomplete="off" placeholder="Your name here"></input>
     <input id="chatInput" autocomplete="off" placeholder="Your query here"></input>
+    <ul id="chatResponse"></ul>
     <button onclick="sendMessage()">Send</button>
   </form>
 </div>
@@ -68,8 +69,43 @@
     <div id="feedbackMessage"></div>
   </form>
 </div>
+<div class="assisstance">
+  <div id="queues">
+    <ul id="queueTimes"></ul>
+    <button id="checkQueues" onclick = "startStream">Check Queues</button>
+    <div id="queueResult"></div>
+  </div>
+  <div id="trolley">
+    <form id = "unlockTrolley" class="" action="/unlockTrolley" method="get">
+      <input id="unlockTrolleyInput" name="trolleyNumber" autocomplete="off" placeholder="TrolleyNumber" required />
+      <div id="unlockMsg"></div>
+      <button id="unlockTrolleyButton" type="button">Unlock Trolley</button>
+    </form>
+  </div>
+  <div id="car">
+    <form id = "locateCar" class="" action="/locateCar" method="get">
+      <input id="locateCarInput" name="carReg" autocomplete="off" placeholder="Car Reg" required />
+      <div id="parkingSpace"></div>
+      <button id="locateCarButton" type="button">Locate Car</button>
+    </form>
+  </div>
+</div>
 
 <script>
+const queueSocket = new WebSocket('ws://localhost:4000/')
+
+queueSocket.onmessage = function(event) {
+    const queueDiv = document.getElementById('queueResult');
+    try {
+        const jsonData = event.data;
+        console.log('Received JSON data:', jsonData);
+        // Update the UI with the parsed JSON data
+        queueDiv.textContent = JSON.stringify(jsonData); // Display JSON data as a string
+    } catch (error) {
+        console.error('Error parsing JSON data:', JSON.stringify(error)); // Explicitly stringify the error object
+    }
+};
+
 const chatSocket = new WebSocket('ws://localhost:4000/');
 
 chatSocket.addEventListener('open', function (event) {
@@ -85,7 +121,8 @@ chatSocket.addEventListener('message', function (event) {
         // Update the UI with the parsed JSON data
         resultDiv.textContent = JSON.stringify(jsonData); // Display JSON data as a string
     } catch (error) {
-        console.error('Error parsing JSON data:', JSON.stringify(error)); // Explicitly stringify the error object
+        console.error('Error parsing JSON data:', JSON.stringify(error));
+        // Explicitly stringify the error object
     }
 });
 
@@ -110,6 +147,8 @@ function sendMessage() {
 const ws = new WebSocket('ws://localhost:4000/');
 
 // Handle WebSocket open event
+
+
 ws.onmessage = function(event) {
     const resultDiv = document.getElementById('result');
     try {
@@ -122,14 +161,14 @@ ws.onmessage = function(event) {
     }
 };
 
-    // Function to send a message to start the stream
-    function startStream() {
-      // Send a message to the server to start the stream
-      ws.send('startStream');
-    }
+// Function to send a message to start the stream
+function startStream() {
+  // Send a message to the server to start the stream
+  ws.send('startStream');
+}
 
-    // Attach click event listener to the button
-    document.getElementById('startStreamButton').addEventListener('click', startStream);
+// Attach click event listener to the button
+document.getElementById('startStreamButton').addEventListener('click', startStream);
   // Add event listener to the button
 var totalValueButton = document.getElementById('totalValuebutton');
 var applyDiscountbutton = document.getElementById('applyDiscountbutton');
@@ -316,6 +355,81 @@ document.getElementById('findProductButton').addEventListener('click', function(
       .then(data => {
          // Display the price message on the browser
          document.getElementById('location').innerText = data.location;
+      })
+      .catch(error => {
+         // Handle network errors
+         console.error('Error:', error);
+      });
+   } else {
+      // Inform user to fill in both item name and price
+      console.error('Please enter item name');
+   }
+
+});
+
+document.getElementById('unlockTrolleyButton').addEventListener('click', function(event) {
+   event.preventDefault(); // Prevent default form submission behavior
+   const trolleyNumber = document.getElementById('unlockTrolleyInput').value;
+
+   // Ensure itemName is provided
+   if (trolleyNumber) {
+      // Send the form data to the server using fetch or another method
+      fetch(`/unlockTrolley?trolleyNumber=${encodeURIComponent(trolleyNumber)}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+      })
+      .then(response => {
+         // Handle response from server
+         if (response.ok) {
+            // Parse response JSON
+            return response.json();
+         } else {
+            // Handle error
+            console.error('Failed to unlock trolley');
+         }
+      })
+      .then(data => {
+         // Display the price message on the browser
+         document.getElementById('unlockMsg').innerText = data.unlockMsg;
+      })
+      .catch(error => {
+         // Handle network errors
+         console.error('Error:', error);
+      });
+   } else {
+      // Inform user to fill in both item name and price
+      console.error('Please enter item name');
+   }
+
+});
+document.getElementById('locateCarButton').addEventListener('click', function(event) {
+   event.preventDefault(); // Prevent default form submission behavior
+   const carReg = document.getElementById('locateCarInput').value;
+
+   // Ensure itemName is provided
+   if (carReg) {
+      // Send the form data to the server using fetch or another method
+      fetch(`/locateCar?carReg=${encodeURIComponent(carReg)}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+      })
+      .then(response => {
+         // Handle response from server
+         if (response.ok) {
+            // Parse response JSON
+            return response.json();
+         } else {
+            // Handle error
+            console.error('Failed to locate car');
+         }
+      })
+      .then(data => {
+         // Display the price message on the browser
+         document.getElementById('parkingSpace').innerText = data.parkingSpace;
       })
       .catch(error => {
          // Handle network errors
