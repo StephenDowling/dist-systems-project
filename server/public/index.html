@@ -51,21 +51,75 @@
   <button id="startStreamButton">Start Stream</button>
   <div id="result"></div>
 </div>
+<div class="chatBox">
+  <p>Chat Box</p>
+  <ul id="messages"></ul>
+  <form id="form" actions="">
+    <input id= "nameInput" autocomplete="off" placeholder="Your name here"></input>
+    <input id="chatInput" autocomplete="off" placeholder="Your query here"></input>
+    <button onclick="sendMessage()">Send</button>
+  </form>
+</div>
+<div class="feedbackBox">
+  <p>Feedback Box</p>
+  <form id="form" actions="">
+    <input id="feedbackInput" autocomplete="off" placeholder="Your feedback here"></input>
+    <button id="feedbackButton">Send</button>
+    <div id="feedbackMessage"></div>
+  </form>
+</div>
 
 <script>
-const ws = new WebSocket('ws://localhost:4000');
+const chatSocket = new WebSocket('ws://localhost:4000/');
+
+chatSocket.addEventListener('open', function (event) {
+    console.log('WebSocket connected');
+});
+
+chatSocket.addEventListener('message', function (event) {
+    console.log('Message from server:', event.data);
+    const resultDiv = document.getElementById('result');
+    try {
+        const jsonData = JSON.parse(event.data);
+        console.log('Received JSON data:', jsonData);
+        // Update the UI with the parsed JSON data
+        resultDiv.textContent = JSON.stringify(jsonData); // Display JSON data as a string
+    } catch (error) {
+        console.error('Error parsing JSON data:', JSON.stringify(error)); // Explicitly stringify the error object
+    }
+});
+
+function sendMessage() {
+    event.preventDefault();
+    const nameInput = document.getElementById('nameInput');
+    const name = nameInput.value;
+    const messageInput = document.getElementById('chatInput');
+    const message = messageInput.value;
+    chatSocket.send(JSON.stringify({ method: 'contactSupport', parameters: { name: name, message: message } }));
+    // Update UI with sent message
+    const messages = document.getElementById('messages');
+    const li = document.createElement('li');
+    li.textContent = 'You: ' + message;
+    messages.appendChild(li);
+    // Clear input field after sending message
+    messageInput.value = '';
+    nameInput.disabled = true;
+}
+
+
+const ws = new WebSocket('ws://localhost:4000/');
 
 // Handle WebSocket open event
 ws.onmessage = function(event) {
-const resultDiv = document.getElementById('result');
-try {
-  const jsonData = JSON.parse(event.data);
-  console.log('Received JSON data:', jsonData);
-  // Update the UI with the parsed JSON data
-  resultDiv.textContent = JSON.stringify(jsonData); // Display JSON data as a string
-} catch (error) {
-  console.error('Error parsing JSON data:', error);
-}
+    const resultDiv = document.getElementById('result');
+    try {
+        const jsonData = JSON.parse(event.data);
+        console.log('Received JSON data:', jsonData);
+        // Update the UI with the parsed JSON data
+        resultDiv.textContent = JSON.stringify(jsonData); // Display JSON data as a string
+    } catch (error) {
+        console.error('Error parsing JSON data:', JSON.stringify(error)); // Explicitly stringify the error object
+    }
 };
 
     // Function to send a message to start the stream
@@ -262,6 +316,45 @@ document.getElementById('findProductButton').addEventListener('click', function(
       .then(data => {
          // Display the price message on the browser
          document.getElementById('location').innerText = data.location;
+      })
+      .catch(error => {
+         // Handle network errors
+         console.error('Error:', error);
+      });
+   } else {
+      // Inform user to fill in both item name and price
+      console.error('Please enter item name');
+   }
+
+});
+
+document.getElementById('feedbackButton').addEventListener('click', function(event) {
+   event.preventDefault(); // Prevent default form submission behavior
+   const feedback = document.getElementById('feedbackInput').value;
+
+   // Ensure itemName is provided
+   if (feedback) {
+      // Send the form data to the server using fetch or another method
+      fetch(`/customerFeedback`, {
+         method: 'POST',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+         body: JSON.stringify({ feedback: feedback }) // Pass feedback in the request body
+      })
+      .then(response => {
+         // Handle response from server
+         if (response.ok) {
+            // Parse response JSON
+            return response.json();
+         } else {
+            // Handle error
+            console.error('Failed to send feedback');
+         }
+      })
+      .then(data => {
+         // Display the price message on the browser
+         document.getElementById('feedbackMessage').innerText = data.msg;
       })
       .catch(error => {
          // Handle network errors

@@ -21,19 +21,51 @@ var clientQuery = new query_proto.Query("0.0.0.0:40000", grpc.credentials.create
 
 //WebSocket
 
-wss.on('connection', function connection(ws) {
-  console.log('WebSocket connected');
+// wss.on('connection', function connection(ws) {
+//   console.log('WebSocket connected');
+//
+//   // Handle messages from the client
+//   ws.on('message', function incoming(message) {
+//     console.log('Received message:', message);
+//     // You can handle the received message here and send responses if needed
+//   });
+//
+//   // Handle WebSocket disconnection
+//   ws.on('close', function close() {
+//     console.log('WebSocket disconnected');
+//   });
+// });
 
-  // Handle messages from the client
-  ws.on('message', function incoming(message) {
-    console.log('Received message:', message);
-    // You can handle the received message here and send responses if needed
-  });
+wss.on('connection', function(ws) {
+    ws.on('message', function(message) {
 
-  // Handle WebSocket disconnection
-  ws.on('close', function close() {
-    console.log('WebSocket disconnected');
-  });
+        //console.log('Received message from client:', message);
+        wss.clients.forEach(function(client) {
+            if (client !== ws && client.readyState === WebSocket.OPEN) {
+                client.send(message);
+            }
+        });
+        // Parse message as JSON
+        try {
+            const data = JSON.parse(message);
+
+            if (data.method === 'allergyInfo') {
+                // Call the appropriate gRPC method
+                allergyInfo(data.parameters);
+            }
+
+            // Handle the message
+            console.log('Parsed message:', data);
+
+            // Example: Make gRPC call based on the message
+            if (data.method === 'contactSupport') {
+                // Call the appropriate gRPC method
+                contactSupport(data.parameters);
+            }
+        } catch (error) {
+            console.error('Error parsing message:', error);
+        }
+    });
 });
 
 
@@ -168,7 +200,34 @@ app.get('/findProduct', (req, res) => {
   });
 });
 
+//price look up
 
+app.post('/customerFeedback', (req, res) => {
+  // You can access the request body here
+
+  const feedback = req.body.feedback;
+  console.log("Request body:", req.body);
+if (req.body && req.body.feedback) {
+  console.log("Feedback:", req.body.feedback);
+} else {
+  console.error("Missing feedback in request body");
+}
+  // Call your gRPC function totalValue here
+  // Check if itemName and itemPrice are defined
+  if (feedback) {
+    // Call your gRPC function addToCart here with itemName and itemPrice
+    customerFeedback({ feedback: feedback}, (error, response) => {
+      if (error) {
+        res.status(500).send('Error adding item to the cart');
+      } else {
+        res.status(200).json(response);
+      }
+    });
+  } else {
+    // Respond with a 400 Bad Request if itemName or itemPrice is missing
+    res.status(400).send('Item name or price is missing');
+  }
+});
 
 
 app.listen(3000, () => {
@@ -384,39 +443,45 @@ function sendDataToClients() {
 
 sendDataToClients(allergyData)
 
-setInterval(() => {
+setTimeout(() => {
   const randomData = allergyData.toString();
   sendDataToClients(randomData);
-}, 1000);
+}, 5000);
 
 var clients = {}
 
-function contactSupport(call){
-    call.on('data', function(chat_message){
-      if(!(chat_message.name in clients)){
+function contactSupport(chat_message, call) {
+    // Check if client with this name already exists
+    if (!(chat_message.name in clients)) {
         clients[chat_message.name] = {
-          name: chat_message.name,
-          call: call}
-      }
-      for(var client in clients){
-        clients[client].call.write({
-          name: chat_message.name,
-          message: chat_message.message
-        })
-      }
-    })
-    call.on('end', function(){
-      call.end();
-    })
-    call.on('error', function(e){
-      console.log(e)
-    })
+            name: chat_message.name,
+            call: call
+        };
+    }
+
+    // Access the client's call object and send the message if available
+    if (clients[chat_message.name] && clients[chat_message.name].call) {
+        clients[chat_message.name].call.send(JSON.stringify({
+            name: chat_message.name,
+            message: chat_message.message
+        }));
+    } else {
+        console.error('Client not found or call object not available');
+    }
+
+    // call.on('end', function () {
+    //     call.end();
+    // });
+    // call.on('error', function (e) {
+    //     console.log(e);
+    // });
 }
+
 
 function customerFeedback(call, callback){
 
-  var feedback = call.request.feedback;
-  console.log("Logging the following feedback: "+feedback);
+  var feedback = call;
+  console.log("Logging the following feedback: "+feedback.feedback);
 
 
   callback(null, {
