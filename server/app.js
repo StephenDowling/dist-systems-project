@@ -12,12 +12,16 @@ const wss = new WebSocket.Server({ server: newServer });
 // Load protobuf definition
 const PROTO_PATH = path.join(__dirname, "protos/retail.proto");
 const PROTO_PATH_QUERY = path.join(__dirname, "protos/query.proto");
+const PROTO_PATH_ASSISSTANCE = path.join(__dirname, "protos/assisstance.proto");
 const packageDefinition = protoLoader.loadSync(PROTO_PATH);
 const packageDefinitionQuery = protoLoader.loadSync(PROTO_PATH_QUERY);
+const packageDefinitionAssisstance = protoLoader.loadSync(PROTO_PATH_ASSISSTANCE);
 const retail_proto = grpc.loadPackageDefinition(packageDefinition).retail;
 const query_proto = grpc.loadPackageDefinition(packageDefinitionQuery).query;
+const assisstance_proto = grpc.loadPackageDefinition(packageDefinitionAssisstance).assisstance;
 var client = new retail_proto.Cart("0.0.0.0:40000", grpc.credentials.createInsecure());
 var clientQuery = new query_proto.Query("0.0.0.0:40000", grpc.credentials.createInsecure());
+var clientAssisstance = new assisstance_proto.Assisstance("0.0.0.0:40000", grpc.credentials.createInsecure());
 
 //WebSocket
 
@@ -477,7 +481,6 @@ function contactSupport(chat_message, call) {
     // });
 }
 
-
 function customerFeedback(call, callback){
 
   var feedback = call;
@@ -489,9 +492,64 @@ function customerFeedback(call, callback){
   })
 }
 
+const shopTills = [
+    { tillNumber: 1, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 2, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 3, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 4, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 5, waitTime: Math.floor(Math. random()*10) }
+
+];
+
+function queueTime(call, callback){
+
+  for (var i = 0; i < shopTills.length; i++) {
+    call.write({
+      tillNumber: shopTills[i].tillNumber,
+      waitTime: shopTills[i].waitTime
+    });
+  }
+  call.end();
+}
+
+function unlockTrolley(call, callback){
+
+  var trolleyNumber = call.request.trolleyNumber
+  if(trolleyNumber > 0 && trolleyNumber < 100){
+    unlockMsg = "Trolley is unlocked, happy shopping!"
+  } else{
+    unlockMsg = "This trolley is unavailable, please try a different trolley number"
+  }
+  callback(null, {
+    unlockMsg:unlockMsg
+  })
+}
+
+function locateCar(call, callback){
+
+  var carReg = call.request.carReg
+  var parkingSpace
+  if(carReg > 0 && carReg < 100){
+    parkingSpace = "You are parked in space number 23"
+  }
+  else if(carReg >= 100 && carReg < 200){
+    parkingSpace = "You are parked in space number 43"
+  }
+  else if(carReg >= 200 && carReg < 300){
+    parkingSpace = "You are parked in space number 63"
+  }
+  else{
+    parkingSpace = "Unable to locate your reg in the car park, please try again"
+  }
+  callback(null, {
+    parkingSpace:parkingSpace
+  })
+}
+
 var server = new grpc.Server()
 server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart, totalValue:totalValue, applyDiscount: applyDiscount, processPayment: processPayment })
 server.addService(query_proto.Query.service, {priceLookUp: priceLookUp, findProduct: findProduct, allergyInfo: allergyInfo, contactSupport: contactSupport, customerFeedback: customerFeedback})
+server.addService(assisstance_proto.Assisstance.service, {queueTime: queueTime, unlockTrolley: unlockTrolley, locateCar: locateCar})
 server.bindAsync("0.0.0.0:40000", grpc.ServerCredentials.createInsecure(), function() {
   server.start()
 })

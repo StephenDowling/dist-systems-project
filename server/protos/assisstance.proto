@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package assisstance;
+
+service Assisstance {
+  rpc queueTime (QueueTimeRequest) returns (stream QueueTimeResponse) {}
+  rpc unlockTrolley (UnlockRequest) returns (UnlockResponse) {}
+  rpc locateCar (ParkingRequest) returns (ParkingResponse) {}
+}
+
+message QueueTimeRequest {
+
+}
+
+message QueueTimeResponse {
+  uint32 tillNumber = 1;
+  uint32 waitTime = 2;
+}
+
+message UnlockRequest {
+  uint32 trolleyNumber = 1;
+}
+
+message UnlockResponse {
+  string unlockMsg = 1;
+}
+
+message ParkingRequest {
+  uint32 carReg = 1;
+}
+
+message ParkingResponse {
+  string parkingSpace = 1;
+}

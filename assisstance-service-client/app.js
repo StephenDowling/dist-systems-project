@@ -1,0 +1,295 @@
+var readlineSync = require('readline-sync')
+var readline = require('readline')
+var axios = require('axios')
+var grpc = require("@grpc/grpc-js")
+var protoLoader = require("@grpc/proto-loader")
+var PROTO_PATH = __dirname + "/protos/assisstance.proto"
+
+var packageDefinition = protoLoader.loadSync(PROTO_PATH)
+var assisstance_proto = grpc.loadPackageDefinition(packageDefinition).assisstance
+var client = new assisstance_proto.Assisstance("0.0.0.0:40000", grpc.credentials.createInsecure());
+
+//cart service
+
+// function addToCart(call) {
+//   while (true) {
+//     var name = readlineSync.question("What is the name of the item? (Type 'q' to Quit): ");
+//     if (name.toLowerCase() === "q") {
+//       break;
+//     }
+//     var price = parseFloat(readlineSync.question("How much does the item cost?: "));
+//
+//     call.write({
+//       name: name,
+//       price: price
+//     });
+//   }
+//
+//   call.end();
+// }
+//
+// var call = client.addToCart(function(error, response) {
+//   if (error) {
+//     console.error("An error occurred: " + error);
+//   } else {
+//     console.log("Response: " + response.msg);
+//   }
+// });
+//
+// function removeFromCart(){
+//   var name = readlineSync.question("What is the name of the item you wish to remove?: ")
+//   try{
+//       client.removeFromCart({
+//         name:name
+//       }, function(error, response){
+//         try{
+//           if(response.removeMsg){
+//             console.log(response.removeMsg)
+//           }
+//           else{
+//             console.log(response.removeMsg)
+//           }
+//         }
+//         catch(e){
+//           console.log("server issue")
+//         }
+//       })
+//   }catch(e){
+//     console.log("Error occured")
+//   }
+// }
+//
+// function totalValue() {
+//   client.totalValue({}, function(error, response) {
+//     if (error) {
+//       console.error("An error occurred:", error);
+//       return;
+//     }
+//
+//     if (response.total) {
+//       console.log("Your total is " + response.total);
+//     } else {
+//       console.log("There is nothing in your cart");
+//     }
+//   });
+// }
+//
+// function applyDiscount(){
+//   try{
+//     client.applyDiscount({}, function(error, response){
+//       try{
+//           console.log(response.discountConf)
+//         }
+//         catch(e){
+//           console.log(error)
+//         }
+//       }
+//
+//     )
+//   }
+//   catch(e){
+//     console.log("Error occured applying discount")
+//   }
+// }
+//
+// function processPayment(){
+//   var cardNo = readlineSync.question("Please enter your 16 digit card number: ")
+//   try{
+//     client.processPayment({
+//       cardNo:cardNo
+//     }, function(error, response){
+//       try{
+//         if(response.paymentConfirmation){
+//           console.log(response.paymentConfirmation)
+//         }
+//         else{
+//           console.log(response.paymentConfirmation)
+//         }
+//       }
+//       catch(e){
+//         console.log(e)
+//         console.log("server error")
+//       }
+//
+//     } )
+//   }
+//   catch(e){
+//     console.log("Error occured")
+//     console.log(e);
+//   }
+// }
+
+//query service
+
+// function priceLookUp(){
+//   var name = readlineSync.question("Please enter the name of the product you want to look up: ")
+//
+//     client.priceLookUp({
+//       name: name
+//     }, function (error, response) {
+//       try{
+//         if(response){
+//           console.log(response)
+//         }
+//         else{
+//           console.log("Error here")
+//         }
+//       }
+//       catch(e){
+//         console.log(e)
+//         console.log("error occured")
+//       }
+//
+//     })
+//
+// }
+//
+// function findProduct(){
+//   var name = readlineSync.question("Please enter the name of the product you want to locate: ")
+//
+//     client.findProduct({
+//       name: name
+//     }, function (error, response) {
+//       try{
+//         if(response){
+//           console.log(response)
+//         }
+//         else{
+//           console.log("Error occured")
+//         }
+//       }
+//       catch(e){
+//         console.log(e)
+//         console.log("error occured")
+//       }
+//
+//     })
+//
+// }
+//
+// function allergyInfo(){
+//   var call = client.allergyInfo({});
+//   call.on('data', function(response) {
+//     console.log("If you have a " + response.allergy + " allergy, please avoid the following products: " + response.products);
+//   });
+// }
+//
+// function contactSupport() {
+//     var call = client.contactSupport();
+//     var name = readlineSync.question("What is your name?")
+//
+//     call.on('data', function(resp){
+//       console.log(resp.name + ": "+resp.message)
+//     });
+//
+//     call.on('end', function(){})
+//
+//     call.on('error', function(e){
+//       console.log("Cannot connect to the Chat Service ")
+//     })
+//     call.write({
+//       message: name+" has joined the chat",
+//       name: name
+//     })
+//
+//     var rl = readline.createInterface({
+//       input: process.stdin,
+//       output: process.stdout
+//     })
+//
+//     rl.on("line", function(message){
+//       if(message.toLowerCase() === 'quit'){
+//         call.write({
+//           message: name + " left the chatroom",
+//           name: name
+//         })
+//         call.end();
+//         rl.close();
+//       }
+//
+//       else{
+//         call.write({
+//           message: message,
+//           name: name
+//         })
+//
+//       }
+//     })
+// }
+//
+// function customerFeedback() {
+//   var feedback = readlineSync.question("Please enter your feedback here: ")
+//   client.customerFeedback({
+//       feedback: feedback
+//   }, function(error, response) {
+//     try {
+//       if (response) {
+//         console.log(response.msg);
+//       } else {
+//         console.log("Error occurred");
+//       }
+//     } catch (e) {
+//       console.log(e);
+//       console.log("Error here");
+//     }
+//   })
+// }
+
+//assisstance service
+
+function queueTime(){
+  var call = client.queueTime({});
+  call.on('data', function(response) {
+    console.log("Till number " + response.tillNumber + ", wait time is " + response.waitTime+" minutes");
+  });
+}
+
+function unlockTrolley() {
+
+  var trolleyNumber = readlineSync.question("Please enter the number of the trolley you want to unlock: ");
+  // Call unlockTrolley method with correct arguments
+  var call = client.unlockTrolley({ trolleyNumber: trolleyNumber }, function(err, response) {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    console.log(response.unlockMsg);
+  });
+}
+
+function locateCar(){
+
+  var carReg = readlineSync.question("Please enter your car reg number: ")
+
+  var call = client.locateCar({ carReg: carReg }, function(err, response) {
+    if (err) {
+      console.error(err);
+      return;
+    }
+    console.log(response.parkingSpace);
+  });
+}
+
+  var action = readlineSync.question(
+    "What would you like to do?\n"
+    + "\t 1 look up the queue times on each till\n"
+    + "\t 2 unlock a trolley at the store\n"
+    + "\t 3 locate your car in the car park\n"
+    + "\t 4 quit the application\n"
+  )
+
+  action = parseInt(action)
+
+
+  if(action === 1) {
+    queueTime();
+  }
+  if(action === 2) {
+    unlockTrolley();
+  }
+  if(action === 3) {
+    locateCar()
+  }
+  if(action === 4) {
+    process.exit();
+  }
