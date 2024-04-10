@@ -7,6 +7,7 @@ service Query {
   rpc findProduct (LocationRequest) returns (LocationResponse) {}
   rpc allergyInfo (AllergyRequest) returns (stream AllergyResponse) {}
   rpc contactSupport (stream ChatMessage) returns (stream ChatMessage) {}
+  rpc customerFeedback (FeedbackRequest) returns (FeedbackResponse) {}
 }
 
 message PriceRequest {
@@ -26,7 +27,7 @@ message LocationResponse{
 }
 
 message AllergyRequest{
-  string allergy = 1;
+
 }
 
 message AllergyResponse{
@@ -37,4 +38,12 @@ message AllergyResponse{
 message ChatMessage{
   string name = 1;
   string message = 2;
+}
+
+message FeedbackRequest{
+  string feedback = 1;
+}
+
+message FeedbackResponse{
+  string msg = 1;
 }

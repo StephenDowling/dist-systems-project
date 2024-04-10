@@ -2,8 +2,12 @@ const express = require('express');
 const path = require('path');
 const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
+const http = require('http');
+const WebSocket = require('ws');
 
 const app = express();
+const newServer = http.createServer(app);
+const wss = new WebSocket.Server({ server: newServer });
 
 // Load protobuf definition
 const PROTO_PATH = path.join(__dirname, "protos/retail.proto");
@@ -12,12 +16,34 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH);
 const packageDefinitionQuery = protoLoader.loadSync(PROTO_PATH_QUERY);
 const retail_proto = grpc.loadPackageDefinition(packageDefinition).retail;
 const query_proto = grpc.loadPackageDefinition(packageDefinitionQuery).query;
+var client = new retail_proto.Cart("0.0.0.0:40000", grpc.credentials.createInsecure());
+var clientQuery = new query_proto.Query("0.0.0.0:40000", grpc.credentials.createInsecure());
+
+//WebSocket
+
+wss.on('connection', function connection(ws) {
+  console.log('WebSocket connected');
+
+  // Handle messages from the client
+  ws.on('message', function incoming(message) {
+    console.log('Received message:', message);
+    // You can handle the received message here and send responses if needed
+  });
+
+  // Handle WebSocket disconnection
+  ws.on('close', function close() {
+    console.log('WebSocket disconnected');
+  });
+});
+
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Parse JSON request bodies
 app.use(express.json());
+
+//cart service
 
 // addToCart
 app.post('/addToCart', (req, res) => {
@@ -102,10 +128,57 @@ app.delete('/processPayment', (req, res) => {
   })
 })
 
+//query service
+
+//price look up
+app.get('/priceLookUp', (req, res) => {
+  // You can access the request query parameters here
+  const itemName = req.query.itemName;
+  console.log("app.get() " + itemName);
+
+  priceLookUp(itemName, (error, response) => {
+    if (error) {
+      // Handle error
+      console.error('Error:', error);
+      // Send error response if needed
+      res.status(500).send('Error processing price lookup');
+    } else {
+      // Send response with priceMsg
+      res.status(200).json(response);
+    }
+  });
+});
+
+//find product
+app.get('/findProduct', (req, res) => {
+  // You can access the request query parameters here
+  const itemName = req.query.itemName;
+  console.log("app.get() " + itemName);
+
+  findProduct(itemName, (error, response) => {
+    if (error) {
+      // Handle error
+      console.error('Error:', error);
+      // Send error response if needed
+      res.status(500).send('Error processing findProduct');
+    } else {
+      // Send response with priceMsg
+      res.status(200).json(response);
+    }
+  });
+});
+
+
+
 
 app.listen(3000, () => {
   console.log("App listening on port 3000")
 })
+
+const PORT = process.env.PORT || 4000;
+newServer.listen(PORT, function () {
+  console.log(`WebSocket server listening on port ${PORT}`);
+});
 
 //cart service
 
@@ -246,33 +319,31 @@ var allergyData = [
     products: "Crab, Lobster, Shrimp"
   }
 ]
+var allergyDataString = JSON.stringify(allergyData);
 
-function priceLookUp(call, callback){
-  var price, priceMsg;
-  var name = call.request.name;
-  console.log(name);
-  if(name.toLowerCase() == "bread"){
-    price = 3.00;
-    priceMsg = "The cost of "+name+" is "+price;
-  } else if(name.toLowerCase() == "tea"){
-    price = 1.50;
-    priceMsg = "The cost of "+name+" is "+price;
-  } else if(name.toLowerCase() == "milk"){
-    price = 2.00
-    priceMsg = "The cost of "+name+" is "+price;
-  } else{
-    priceMsg = "Unable to locate product, please try a different product name"
+function priceLookUp(call, callback) {
+  const itemName = call
+  var priceMsg;
+
+  if (itemName.toLowerCase() === "bread") {
+    priceMsg = "The cost of " + itemName + " is $3.00";
+  } else if (itemName.toLowerCase() === "tea") {
+    priceMsg = "The cost of " + itemName + " is $1.50";
+  } else if (itemName.toLowerCase() === "milk") {
+    priceMsg = "The cost of " + itemName + " is $2.00";
+  } else {
+    priceMsg = "Unable to locate product. Please try a different product name.";
   }
 
-  console.log(priceMsg);
+  // Send the priceMsg back to the client
   callback(null, {
     priceMsg: priceMsg
-  })
+  });
 }
 
 function findProduct(call, callback){
   var location;
-  var name = call.request.name;
+  var name = call;
   console.log(name);
   if(name.toLowerCase() == "bread"){
     location = name+" is located on aisle 1"
@@ -290,16 +361,33 @@ function findProduct(call, callback){
   })
 }
 
-function allergyInfo(call, callback){
-  for(var i = 0;i < allergyData.length; i++){
+function allergyInfo(call, callback) {
+  console.log("We are here");
+  for (var i = 0; i < allergyData.length; i++) {
     call.write({
       allergy: allergyData[i].allergy,
       products: allergyData[i].products
-    })
+    });
   }
-  call.end()
+  call.end();
+
 }
 
+function sendDataToClients() {
+  wss.clients.forEach(function each(client) {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(allergyDataString);
+      console.log(JSON.stringify(allergyDataString))
+    }
+  });
+}
+
+sendDataToClients(allergyData)
+
+setInterval(() => {
+  const randomData = allergyData.toString();
+  sendDataToClients(randomData);
+}, 1000);
 
 var clients = {}
 
@@ -325,9 +413,20 @@ function contactSupport(call){
     })
 }
 
+function customerFeedback(call, callback){
+
+  var feedback = call.request.feedback;
+  console.log("Logging the following feedback: "+feedback);
+
+
+  callback(null, {
+    msg: "Your feedback has been received, thank you"
+  })
+}
+
 var server = new grpc.Server()
 server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart, totalValue:totalValue, applyDiscount: applyDiscount, processPayment: processPayment })
-server.addService(query_proto.Query.service, {priceLookUp: priceLookUp, findProduct: findProduct, allergyInfo: allergyInfo, contactSupport: contactSupport})
+server.addService(query_proto.Query.service, {priceLookUp: priceLookUp, findProduct: findProduct, allergyInfo: allergyInfo, contactSupport: contactSupport, customerFeedback: customerFeedback})
 server.bindAsync("0.0.0.0:40000", grpc.ServerCredentials.createInsecure(), function() {
   server.start()
 })

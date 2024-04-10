@@ -217,6 +217,25 @@ function contactSupport() {
     })
 }
 
+function customerFeedback() {
+  var feedback = readlineSync.question("Please enter your feedback here: ")
+  client.customerFeedback({
+      feedback: feedback
+  }, function(error, response) {
+    try {
+      if (response) {
+        console.log(response.msg);
+      } else {
+        console.log("Error occurred");
+      }
+    } catch (e) {
+      console.log(e);
+      console.log("Error here");
+    }
+  })
+}
+
+
 
 
 
@@ -247,7 +266,7 @@ function contactSupport() {
     contactSupport();
   }
   if(action === 5) {
-    console.log("Not supported yet")
+    customerFeedback();
   }
   if(action === 6) {
     process.exit();

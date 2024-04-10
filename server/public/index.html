@@ -8,13 +8,13 @@
 <h1>Shopping Cart</h1>
 <p>Welcome to the shopping cart!</p>
 <p>Please select from the services below: </p>
-<div class="container">
+<div id="cartService" class="container">
   <ul id="items"></ul>
 <form id="form" action="/addToCart" method="post">
   <input id="inputName" name="itemName" autocomplete="off" placeholder="Item Name" required />
   <input id="inputPrice" name="itemPrice" autocomplete="off" placeholder="Price" required />
 
-  <button id="submitButton" type="button">Add</button> <!-- Note: type="button" to prevent default form submission -->
+  <button id="submitButton" type="button">Add</button><!-- Note: type="button" to prevent default form submission -->
 </form>
 <form id="removeForm" action="/removeFromCart" method="delete">
   <input id="removeInputName" name="itemName" autocomplete="off" placeholder="Item Name" required />
@@ -33,18 +33,60 @@
 </form>
 </div>
 
+<div id="queryService" class="container">
+  <form id = "priceLookUp" class="" action="/priceLookUp" method="get">
+    <input id="priceLookUpInput" name="itemName" autocomplete="off" placeholder="Item Name" required />
+    <div id="priceMessage"></div>
+    <button id="priceLookUpButton" type="button">Look up price</button>
+  </form>
+  <form id = "findProduct" class="" action="/findProduct" method="get">
+    <input id="findProductInput" name="itemName" autocomplete="off" placeholder="Item Name" required />
+    <div id="location"></div>
+    <button id="findProductButton" type="button">Find Product</button>
+  </form>
+
+</div>
+<div id="data-container">
+  <ul id="allergyList"></ul>
+  <button id="startStreamButton">Start Stream</button>
+  <div id="result"></div>
+</div>
+
 <script>
+const ws = new WebSocket('ws://localhost:4000');
+
+// Handle WebSocket open event
+ws.onmessage = function(event) {
+const resultDiv = document.getElementById('result');
+try {
+  const jsonData = JSON.parse(event.data);
+  console.log('Received JSON data:', jsonData);
+  // Update the UI with the parsed JSON data
+  resultDiv.textContent = JSON.stringify(jsonData); // Display JSON data as a string
+} catch (error) {
+  console.error('Error parsing JSON data:', error);
+}
+};
+
+    // Function to send a message to start the stream
+    function startStream() {
+      // Send a message to the server to start the stream
+      ws.send('startStream');
+    }
+
+    // Attach click event listener to the button
+    document.getElementById('startStreamButton').addEventListener('click', startStream);
   // Add event listener to the button
-  var totalValueButton = document.getElementById('totalValuebutton');
-  var applyDiscountbutton = document.getElementById('applyDiscountbutton');
-  totalValueButton.addEventListener('click', function() {
-            // Change the window location to the desired URL
-            window.location.href = 'http://localhost:3000/totalValue';
-        });
-  applyDiscountbutton.addEventListener('click', function() {
-            // Change the window location to the desired URL
-            window.location.href = 'http://localhost:3000/applyDiscount';
-        });
+var totalValueButton = document.getElementById('totalValuebutton');
+var applyDiscountbutton = document.getElementById('applyDiscountbutton');
+totalValueButton.addEventListener('click', function() {
+          // Change the window location to the desired URL
+          window.location.href = 'http://localhost:3000/totalValue';
+      });
+applyDiscountbutton.addEventListener('click', function() {
+          // Change the window location to the desired URL
+          window.location.href = 'http://localhost:3000/applyDiscount';
+      });
 //add to cart function
 document.getElementById('submitButton').addEventListener('click', function(event) {
            event.preventDefault(); // Prevent default form submission behavior
@@ -72,6 +114,8 @@ document.getElementById('submitButton').addEventListener('click', function(event
                  } else {
                     // Handle error
                     console.error('Failed to add item to cart');
+                    console.log(response)
+                    console.log(response.ok)
                  }
               })
               .catch(error => {
@@ -155,6 +199,82 @@ document.getElementById('paymentButton').addEventListener('click', function(even
       console.error('Please enter card number');
    }
 });
+document.getElementById('priceLookUpButton').addEventListener('click', function(event) {
+   event.preventDefault(); // Prevent default form submission behavior
+   const itemName = document.getElementById('priceLookUpInput').value;
+
+   // Ensure itemName is provided
+   if (itemName) {
+      // Send the form data to the server using fetch or another method
+      fetch(`/priceLookUp?itemName=${encodeURIComponent(itemName)}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+      })
+      .then(response => {
+         // Handle response from server
+         if (response.ok) {
+            // Parse response JSON
+            return response.json();
+         } else {
+            // Handle error
+            console.error('Failed to find price');
+         }
+      })
+      .then(data => {
+         // Display the price message on the browser
+         document.getElementById('priceMessage').innerText = data.priceMsg;
+      })
+      .catch(error => {
+         // Handle network errors
+         console.error('Error:', error);
+      });
+   } else {
+      // Inform user to fill in both item name and price
+      console.error('Please enter item name');
+   }
+
+});
+document.getElementById('findProductButton').addEventListener('click', function(event) {
+   event.preventDefault(); // Prevent default form submission behavior
+   const itemName = document.getElementById('findProductInput').value;
+
+   // Ensure itemName is provided
+   if (itemName) {
+      // Send the form data to the server using fetch or another method
+      fetch(`/findProduct?itemName=${encodeURIComponent(itemName)}`, {
+         method: 'GET',
+         headers: {
+            'Content-Type': 'application/json'
+         },
+      })
+      .then(response => {
+         // Handle response from server
+         if (response.ok) {
+            // Parse response JSON
+            return response.json();
+         } else {
+            // Handle error
+            console.error('Failed to find product');
+         }
+      })
+      .then(data => {
+         // Display the price message on the browser
+         document.getElementById('location').innerText = data.location;
+      })
+      .catch(error => {
+         // Handle network errors
+         console.error('Error:', error);
+      });
+   } else {
+      // Inform user to fill in both item name and price
+      console.error('Please enter item name');
+   }
+
+});
+
+
 </script>
 
 </body>
