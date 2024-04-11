@@ -326,7 +326,8 @@ function addToCart(call, callback) {
 
 function removeFromCart(call, callback) {
   // Extract the request object from the gRPC call
-  console.log("Name of item to remove = "+request.name)
+  const request = call.request
+  console.log("Name of item to remove = "+call.request.name)
 
   // Check if request is defined and has a 'name' property
   if (!request) {
@@ -341,10 +342,7 @@ function removeFromCart(call, callback) {
       // Remove the item from the cart
       total = total-cart[i].price;
       found = true;
-      cart.splice(i, 1);
-
-
-      console.log(cart); //print the cart to the console for clarity
+      cart.splice(i, 1); //actual removal
       break; // Exit the loop after removing the item
     }
   }
@@ -359,6 +357,7 @@ function removeFromCart(call, callback) {
 }
 
 function totalValue(call, callback) {
+  total=Math.round((total + Number.EPSILON) * 100) / 100
   callback(null, {
     total:total
   });
@@ -437,26 +436,27 @@ var allergyDataString = JSON.stringify(allergyData);
 var shopTillsString = JSON.stringify(shopTills);
 
 function priceLookUp(call, callback) {
+  // Array of items with name and price
+  const items = [
+    { name: "bread", price: 3.00 },
+    { name: "tea", price: 1.50 },
+    { name: "milk", price: 2.00 }
+  ];
 
-  const itemName = call.request.name
-  console.log(itemName)
-  var priceMsg;
+  const itemName = call.request.name.toLowerCase();
 
-  if (itemName.toLowerCase() === "bread") {
-    priceMsg = "The cost of " + itemName + " is $3.00";
-  } else if (itemName.toLowerCase() === "tea") {
-    priceMsg = "The cost of " + itemName + " is $1.50";
-  } else if (itemName.toLowerCase() === "milk") {
-    priceMsg = "The cost of " + itemName + " is $2.00";
-  } else {
-    priceMsg = "Unable to locate product. Please try a different product name.";
-  }
+  // Find the item in the array
+  const item = items.find(item => item.name === itemName);
+
+  // Prepare response message based on whether the item is found or not
+  const priceMsg = item
+    ? `The cost of ${item.name} is €${item.price.toFixed(2)}`
+    : "Unable to locate product. Please try a different product name.";
 
   // Send the priceMsg back to the client
-  callback(null, {
-    priceMsg: priceMsg
-  });
+  callback(null, { priceMsg });
 }
+
 
 function findProduct(call, callback){
   var location;

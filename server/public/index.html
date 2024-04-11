@@ -94,7 +94,7 @@
 </div>
 
 <script>
-const queueSocket = new WebSocket('ws://localhost:4000/')
+const queueSocket = new WebSocket('ws://localhost:4000/queueTime')
 
 queueSocket.onmessage = function(event) {
     const queueDiv = document.getElementById('queueResult');
@@ -108,7 +108,7 @@ queueSocket.onmessage = function(event) {
     }
 };
 
-const chatSocket = new WebSocket('ws://localhost:4000/');
+const chatSocket = new WebSocket('ws://localhost:4000/contactSupport');
 
 chatSocket.addEventListener('open', function (event) {
     console.log('WebSocket connected');
@@ -146,7 +146,7 @@ function sendMessage() {
 }
 
 
-const ws = new WebSocket('ws://localhost:4000/');
+const ws = new WebSocket('ws://localhost:4000/allergyInfo');
 
 // Handle WebSocket open event
 
