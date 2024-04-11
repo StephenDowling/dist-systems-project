@@ -541,7 +541,7 @@ function queueTime(call, callback){
 }
 
 function unlockTrolley(call, callback){
-  var trolleyNumber = call
+  var trolleyNumber = call.request.trolleyNumber
   if(isNaN(trolleyNumber)){
     unlockMsg = "This trolley is unavailable, please try a different trolley number"
   } else{
@@ -554,7 +554,7 @@ function unlockTrolley(call, callback){
 
 function locateCar(call, callback){
 
-  var carReg = call
+  var carReg = call.request.carReg
   console.log(carReg)
   if(carReg > 0 && carReg < 100){
     parkingSpace = "You are parked in space number 23"
