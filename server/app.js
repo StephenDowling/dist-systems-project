@@ -289,7 +289,7 @@ newServer.listen(PORT, function () {
   console.log(`WebSocket server listening on port ${PORT}`);
 });
 
-//cart service
+// ********** CART SERVICE ********** //
 
 var msg = ""
 var removeMsg = ""
@@ -300,9 +300,8 @@ var item = {
 }
 var total = 0
 
-function addToCart(request, call, callback) {
-
-    // call.on('data', function(request) {
+function addToCart(call, callback) {
+    call.on('data', function(request) {
       var newItem = {
         name: request.name,
         price: request.price
@@ -312,24 +311,22 @@ function addToCart(request, call, callback) {
       console.log("Added item: "+newItem.name)
       console.log(cart)
       console.log("total is now "+total)
-    //})
+    })
 
-    // // call.on('end', function() {
-    //   callback(null, {
-    //     msg: "item(s) added succesfully"
-    //   })
-    // // })
+    call.on('end', function() {
+      callback(null, {
+        msg: "item(s) added succesfully"
+      })
+    })
 
-    // // call.on('error', function(e) {
-    //   console.log("An error occured")
-    // // })
+    call.on('error', function(e) {
+      console.log("An error occured")
+    })
 }
 
-function removeFromCart(request, call, callback) {
+function removeFromCart(call, callback) {
   // Extract the request object from the gRPC call
-  //const request = call.request;
-  console.log("request = "+request)
-  //console.log("name = "+request.name)
+  console.log("Name of item to remove = "+request.name)
 
   // Check if request is defined and has a 'name' property
   if (!request) {
@@ -340,7 +337,7 @@ function removeFromCart(request, call, callback) {
   // Check if the item is in the cart
   var found = false;
   for (var i = 0; i < cart.length; i++) {
-    if (request.toLowerCase() === cart[i].name.toLowerCase()) {
+    if (request.name.toLowerCase() === cart[i].name.toLowerCase()) {
       // Remove the item from the cart
       total = total-cart[i].price;
       found = true;
@@ -353,12 +350,12 @@ function removeFromCart(request, call, callback) {
   }
 
   // Prepare the response message
-  var responseMsg = found ? request + " was removed successfully" : request+ " was not found in the cart";
+  var responseMsg = found ? request.name + " was removed successfully" : request.name+ " was not found in the cart";
   console.log(responseMsg)
   // Send the response back to the client
-  // callback(null, {
-  //   removeMsg: responseMsg
-  // });
+  callback(null, {
+    removeMsg: responseMsg
+  });
 }
 
 function totalValue(call, callback) {
@@ -385,26 +382,26 @@ function applyDiscount(call, callback) {
   })
 }
 
-function processPayment(request, call, callback){
+function processPayment(call, callback){
   var paymentConfirmation;
-  //const request = call.request;
+  const request = call.request;
 
-  if(request.length!=16){
+  if(request.cardNo.length!=16){
     paymentConfirmation = "Your card number must be 16 digits"
   }
   else{
     paymentConfirmation = "Congratulations, your payment has been processed. Your cart is now empty. Thank you for shopping with us!"
     total = 0;
     cart = [];
-    console.log(cart)
     console.log(paymentConfirmation)
+    console.log("Cart = "+cart)
   }
-  // callback(null, {
-  //   paymentConfirmation: paymentConfirmation
-  // })
+  callback(null, {
+    paymentConfirmation: paymentConfirmation
+  })
 }
 
-//query service
+// ********** QUERY SERVICE ********** //
 
 var allergyData = [
   {
@@ -440,7 +437,9 @@ var allergyDataString = JSON.stringify(allergyData);
 var shopTillsString = JSON.stringify(shopTills);
 
 function priceLookUp(call, callback) {
-  const itemName = call
+
+  const itemName = call.request.name
+  console.log(itemName)
   var priceMsg;
 
   if (itemName.toLowerCase() === "bread") {
@@ -461,7 +460,7 @@ function priceLookUp(call, callback) {
 
 function findProduct(call, callback){
   var location;
-  var name = call;
+  var name = call.request.name;
   console.log(name);
   if(name.toLowerCase() == "bread"){
     location = name+" is located on aisle 1"
@@ -480,7 +479,7 @@ function findProduct(call, callback){
 }
 
 function allergyInfo(call, callback) {
-  console.log("We are here");
+
   for (var i = 0; i < allergyData.length; i++) {
     call.write({
       allergy: allergyData[i].allergy,
@@ -495,37 +494,32 @@ function allergyInfo(call, callback) {
 
 var clients = {}
 
-function contactSupport(chat_message, call) {
-    // Check if client with this name already exists
-    if (!(chat_message.name in clients)) {
+function contactSupport(call){
+    call.on('data', function(chat_message){
+      if(!(chat_message.name in clients)){
         clients[chat_message.name] = {
-            name: chat_message.name,
-            call: call
-        };
-    }
-
-    // Access the client's call object and send the message if available
-    if (clients[chat_message.name] && clients[chat_message.name].call) {
-        clients[chat_message.name].call.send(JSON.stringify({
-            name: chat_message.name,
-            message: chat_message.message
-        }));
-    } else {
-        console.error('Client not found or call object not available');
-    }
-
-    // call.on('end', function () {
-    //     call.end();
-    // });
-    // call.on('error', function (e) {
-    //     console.log(e);
-    // });
+          name: chat_message.name,
+          call: call}
+      }
+      for(var client in clients){
+        clients[client].call.write({
+          name: chat_message.name,
+          message: chat_message.message
+        })
+      }
+    })
+    call.on('end', function(){
+      call.end();
+    })
+    call.on('error', function(e){
+      console.log(e)
+    })
 }
 
 function customerFeedback(call, callback){
 
-  var feedback = call;
-  console.log("Logging the following feedback: "+feedback.feedback);
+  var feedback = call.request.feedback;
+  console.log("Logging the following feedback: "+feedback);
 
 
   callback(null, {
@@ -533,7 +527,7 @@ function customerFeedback(call, callback){
   })
 }
 
-
+// ********** ASSISSTANCE SERVICE ********** //
 
 function queueTime(call, callback){
 

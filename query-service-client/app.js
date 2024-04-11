@@ -129,7 +129,7 @@ function priceLookUp(){
     }, function (error, response) {
       try{
         if(response){
-          console.log(response)
+          console.log(response.priceMsg)
         }
         else{
           console.log("Error here")
@@ -152,7 +152,7 @@ function findProduct(){
     }, function (error, response) {
       try{
         if(response){
-          console.log(response)
+          console.log(response.location)
         }
         else{
           console.log("Error occured")
@@ -176,7 +176,7 @@ function allergyInfo(){
 
 function contactSupport() {
     var call = client.contactSupport();
-    var name = readlineSync.question("What is your name?")
+    var name = readlineSync.question("What is your name?: ")
 
     call.on('data', function(resp){
       console.log(resp.name + ": "+resp.message)
@@ -244,7 +244,7 @@ function customerFeedback() {
     "What would you like to do?\n"
     + "\t 1 look up the price of a product\n"
     + "\t 2 find the location of a product\n"
-    + "\t 3 request allergy information based on your allergy\n"
+    + "\t 3 display allergy information\n"
     + "\t 4 contact customer support\n"
     + "\t 5 provide some customer feedback\n"
     + "\t 6 quit the application\n"

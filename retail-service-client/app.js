@@ -135,18 +135,21 @@ function processPayment(){
   if(action === 1) {
     addToCart(call);
   }
-  if(action === 2) {
+  else if(action === 2) {
     removeFromCart();
   }
-  if(action === 3) {
+  else if(action === 3) {
     totalValue();
   }
-  if(action === 4) {
+  else if(action === 4) {
     applyDiscount();
   }
-  if(action === 5) {
+  else if(action === 5) {
     processPayment();
   }
-  if(action === 6) {
+  else if(action === 6) {
     process.exit();
+  }
+  else{
+    console.log("Please enter a number between 1 and 6")
   }
