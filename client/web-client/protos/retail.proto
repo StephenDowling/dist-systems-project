@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package retail;
+
+service Cart {
+  rpc addToCart (stream AddRequest) returns (AddResponse) {}
+  rpc removeFromCart (RemoveRequest) returns (RemoveResponse) {}
+  rpc totalValue (ValueRequest) returns (ValueResponse) {}
+  rpc applyDiscount (DiscountRequest) returns (DiscountResponse) {}
+  rpc processPayment (PaymentRequest) returns (PaymentResponse) {}
+}
+
+message AddRequest {
+  string name = 1;
+  double price = 2;
+}
+
+message AddResponse {
+  string msg = 1;
+}
+
+message RemoveRequest{
+  string name = 1;
+}
+
+message RemoveResponse{
+  string removeMsg = 1;
+}
+
+message ValueRequest {
+
+}
+
+message ValueResponse {
+  float total = 1;
+}
+
+message DiscountRequest{
+
+}
+
+message DiscountResponse {
+  string discountConf = 1;
+  float totalAfterDiscount = 2;
+}
+
+message PaymentRequest {
+  string cardNo = 1;
+}
+message PaymentResponse {
+  string paymentConfirmation = 1;
+}

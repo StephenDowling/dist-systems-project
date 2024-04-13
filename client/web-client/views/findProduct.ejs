@@ -12,24 +12,23 @@
     <a href="/totalValue">Total Value</a>
     <a href="/applyDiscount">Apply Discount</a>
     <a href="/processPayment">Process Payment</a>
+    <a href="/priceLookUp">Price Look Up</a>
+    <a href="/findProduct">Find Product</a>
 
     <% if(error) { %>
       <%= error %>
     <% } %>
 
-    <form action="/" method="post">
+    <form action="/findProduct" method="get">
       <label for="name">Name</label>
       <input type="text" name="name">
       <br/>
-      <label for="price">Price</label>
-      <input type="number" name="price">
-      <br/>
-      <button type="submit">Add</button>
+      <button type="submit">Find Product</button>
     </form>
 
-    <% if(isNaN(msg)) { %>
-      <b>ANS:</b><%= msg %>
-    <% } %>
+    <% if (typeof location === 'string') { %>
+    <b>ANS:</b><%= location %>
+<% } %>
 
 
   </body>

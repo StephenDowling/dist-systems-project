@@ -17,18 +17,15 @@
       <%= error %>
     <% } %>
 
-    <form action="/" method="post">
-      <label for="name">Name</label>
-      <input type="text" name="name">
+    <form action="/processPayment" method="get">
+      <label for="cardNo">Card Number</label>
+      <input type="number" name="cardNo">
       <br/>
-      <label for="price">Price</label>
-      <input type="number" name="price">
-      <br/>
-      <button type="submit">Add</button>
+      <button type="submit">Process!</button>
     </form>
 
-    <% if(isNaN(msg)) { %>
-      <b>ANS:</b><%= msg %>
+    <% if(isNaN(paymentConfirmation)) { %>
+      <b>ANS:</b><%= paymentConfirmation %>
     <% } %>
 
 

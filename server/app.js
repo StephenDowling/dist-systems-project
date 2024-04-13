@@ -327,6 +327,7 @@ function addToCart(call, callback) {
 function removeFromCart(call, callback) {
   // Extract the request object from the gRPC call
   const request = call.request
+  console.log("call = "+call)
   console.log("Name of item to remove = "+call.request.name)
 
   // Check if request is defined and has a 'name' property
@@ -372,7 +373,7 @@ function applyDiscount(call, callback) {
     total = total*0.9
     total = Math.round((total + Number.EPSILON) * 100) / 100
     console.log(total)
-    discountConf = "10% has been applied! Your new total is "+total
+    discountConf = "10% has been applied! Your new total is €"+total
   }
 
   callback(null, {
@@ -385,7 +386,10 @@ function processPayment(call, callback){
   var paymentConfirmation;
   const request = call.request;
 
-  if(request.cardNo.length!=16){
+  if(cart.length === 0){
+    paymentConfirmation = "There is nothing in your cart!"
+  }
+  else if(request.cardNo.length!=16){
     paymentConfirmation = "Your card number must be 16 digits"
   }
   else{
@@ -458,25 +462,28 @@ function priceLookUp(call, callback) {
 }
 
 
-function findProduct(call, callback){
-  var location;
-  var name = call.request.name;
-  console.log(name);
-  if(name.toLowerCase() == "bread"){
-    location = name+" is located on aisle 1"
-  } else if(name.toLowerCase() == "tea"){
-    location = name+" is located on aisle 2"
-  } else if(name.toLowerCase() == "milk"){
-    location = name+" is located on aisle 3"
-  } else{
-    location = "Unable to locate product, please try a different product name"
-  }
+function findProduct(call, callback) {
+  // Array of products with name and location
+  const products = [
+    { name: "bread", location: "aisle 1" },
+    { name: "tea", location: "aisle 2" },
+    { name: "milk", location: "aisle 3" }
+  ];
 
-  console.log(location);
-  callback(null, {
-    location: location
-  })
+  const name = call.request.name.toLowerCase();
+
+  // Find the product in the array
+  const product = products.find(product => product.name === name);
+
+  // Prepare response message based on whether the product is found or not
+  const location = product
+    ? `${product.name} is located on ${product.location}`
+    : "Unable to locate product, please try a different product name";
+
+  // Send the location back to the client
+  callback(null, { location });
 }
+
 
 function allergyInfo(call, callback) {
 
@@ -573,35 +580,35 @@ function locateCar(call, callback){
   })
 }
 
-function sendDataToClients() {
-  wss.clients.forEach(function each(client) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(allergyDataString);
-      console.log(JSON.stringify(allergyDataString))
-    }
-  });
-}
-
-function sendQueuesToClients() {
-  wss.clients.forEach(function each(client) {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(shopTillsString);
-      console.log(JSON.stringify(shopTillsString))
-    }
-  });
-}
-// sendDataToClients(shopTills)
-// sendDataToClients(allergyData)
-sendDataToClients();
-sendQueuesToClients();
-
-setTimeout(() => {
-  const randomData = allergyData.toString();
-  const shopTillsStringAgain = shopTills.toString();
-  sendDataToClients(randomData);
-  sendDataToClients(shopTillsStringAgain);
-  sendQueuesToClients();
-}, 5000);
+// function sendDataToClients() {
+//   wss.clients.forEach(function each(client) {
+//     if (client.readyState === WebSocket.OPEN) {
+//       client.send(allergyDataString);
+//       console.log(JSON.stringify(allergyDataString))
+//     }
+//   });
+// }
+//
+// function sendQueuesToClients() {
+//   wss.clients.forEach(function each(client) {
+//     if (client.readyState === WebSocket.OPEN) {
+//       client.send(shopTillsString);
+//       console.log(JSON.stringify(shopTillsString))
+//     }
+//   });
+// }
+// // sendDataToClients(shopTills)
+// // sendDataToClients(allergyData)
+// sendDataToClients();
+// sendQueuesToClients();
+//
+// setTimeout(() => {
+//   const randomData = allergyData.toString();
+//   const shopTillsStringAgain = shopTills.toString();
+//   sendDataToClients(randomData);
+//   sendDataToClients(shopTillsStringAgain);
+//   sendQueuesToClients();
+// }, 5000);
 
 var server = new grpc.Server()
 server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart, totalValue:totalValue, applyDiscount: applyDiscount, processPayment: processPayment })

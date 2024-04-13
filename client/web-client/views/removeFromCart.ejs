@@ -17,19 +17,16 @@
       <%= error %>
     <% } %>
 
-    <form action="/" method="post">
+    <form action="/removeFromCart" method="post">
       <label for="name">Name</label>
       <input type="text" name="name">
       <br/>
-      <label for="price">Price</label>
-      <input type="number" name="price">
-      <br/>
-      <button type="submit">Add</button>
+      <button type="submit">Remove</button>
     </form>
 
-    <% if(isNaN(msg)) { %>
-      <b>ANS:</b><%= msg %>
-    <% } %>
+    <% if (typeof removeMsg === 'string') { %>
+    <b>ANS:</b><%= removeMsg %>
+<% } %>
 
 
   </body>

@@ -17,19 +17,17 @@
       <%= error %>
     <% } %>
 
-    <form action="/" method="post">
-      <label for="name">Name</label>
-      <input type="text" name="name">
-      <br/>
-      <label for="price">Price</label>
-      <input type="number" name="price">
-      <br/>
-      <button type="submit">Add</button>
+    <form action="/applyDiscount" method="get">
+
     </form>
 
-    <% if(isNaN(msg)) { %>
-      <b>ANS:</b><%= msg %>
+    <% if(!isNaN(total)) { %>
+      <b>Your new total is: €</b><%= total %>
     <% } %>
+
+    <% if (typeof discountConf === 'string') { %>
+    <b>ANS:</b><%= discountConf %>
+<% } %>
 
 
   </body>
