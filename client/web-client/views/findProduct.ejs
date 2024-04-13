@@ -7,29 +7,41 @@
   <body>
     <h1><%= title %></h1>
 
-    <a href="/">Add To Cart</a>
-    <a href="/removeFromCart">Remove From Cart</a>
-    <a href="/totalValue">Total Value</a>
-    <a href="/applyDiscount">Apply Discount</a>
-    <a href="/processPayment">Process Payment</a>
-    <a href="/priceLookUp">Price Look Up</a>
-    <a href="/findProduct">Find Product</a>
-
     <% if(error) { %>
       <%= error %>
     <% } %>
 
     <form action="/findProduct" method="get">
-      <label for="name">Name</label>
+      <label for="name">Name of Product</label>
       <input type="text" name="name">
       <br/>
       <button type="submit">Find Product</button>
     </form>
 
     <% if (typeof location === 'string') { %>
-    <b>ANS:</b><%= location %>
-<% } %>
+    <b><%= location %>
+<% } %></b>
 
+<h2>Retail Service</h2>
+<a href="/">Add To Cart</a>
+<a href="/removeFromCart">Remove From Cart</a>
+<a href="/totalValue">Total Value</a>
+<a href="/applyDiscount">Apply Discount</a>
+<a href="/processPayment">Process Payment</a>
+
+<br/>
+<h2>Query Service</h2>
+<a href="/priceLookUp">Price Look Up</a>
+<a href="/findProduct">Find Product</a>
+<a href="/allergyInfo">Allergy Information</a>
+<a href="/contactSupport">Contact Support</a>
+<a href="/customerFeedback">Customer Feedback</a>
+
+<br/>
+<h2>Assisstance Service</h2>
+<a href="/queueTime">See Queue Times</a>
+<a href="/unlockTrolley">Unlock Trolley</a>
+<a href="/locateCar">Locate Car</a>
 
   </body>
 </html>

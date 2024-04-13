@@ -11,19 +11,18 @@
       <%= error %>
     <% } %>
 
-    <form action="/" method="post">
-      <label for="name">Name of Product</label>
-      <input type="text" name="name">
+    <form action="/locateCar" method="get">
+      <label for="carReg">Car Reg</label>
+      <input type="number" name="carReg" placeholder="Please enter car reg">
       <br/>
-      <label for="price">Price of Product</label>
-      <input type="number" name="price">
       <br/>
-      <button type="submit">Add to Cart!</button>
+      <button type="submit">Locate Car</button>
     </form>
+    <br/>
 
-    <% if(typeof msg === 'string') { %>
-      <b>ANS:</b><%= msg %>
-    <% } %>
+    <% if (typeof parkingSpace === 'string') { %>
+    <b><%= parkingSpace %>
+<% } %></b>
 
     <h2>Retail Service</h2>
     <a href="/">Add To Cart</a>
@@ -45,6 +44,7 @@
     <a href="/queueTime">See Queue Times</a>
     <a href="/unlockTrolley">Unlock Trolley</a>
     <a href="/locateCar">Locate Car</a>
+
 
   </body>
 </html>

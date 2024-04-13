@@ -3,6 +3,8 @@ var router = express.Router();
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
 var path = require('path');
+var readlineSync = require('readline-sync')
+var readline = require('readline');
 
 const PROTO_PATH = path.join(__dirname, "../protos/retail.proto");
 const PROTO_PATH_QUERY = path.join(__dirname, "../protos/query.proto");
@@ -56,12 +58,12 @@ router.get('/removeFromCart', function(req, res, next) {
   res.render('removeFromCart', { title: 'Remove From Cart', error: null, msg: null });
 });
 
-router.post('/removeFromCart', function(req, res, next) {
+router.delete('/removeFromCart', function(req, res, next) {
   var name = req.query.name
   console.log("req = "+req);
   console.log("req.query = "+req.query);
   console.log("req.query.name = "+req.query.name)
-  var removeMsg
+  var removeMsg = null;
   if(isNaN(name)){
     try{
       client.removeFromCart({ name: name}, function (error, response){
@@ -207,5 +209,164 @@ router.get('/findProduct', function(req, res, next) {
       res.render('findProduct', {title: 'Find Product', error: null, location:location })
     }
 }); //find product
+
+router.get('/allergyInfo', function(req, res, next) {
+  var allergy
+  var products
+    try{
+      clientQuery.allergyInfo({}, function (error, response){
+        try{
+          res.render('allergyInfo', {title: 'Allergy Info', error: error, allergy: response.allergy, products: response.products});
+        }
+        catch (error) {
+          console.log(error)
+          res.render('allergyInfo', {title: 'Allergy Info', error: "Allergy Info is not available at the moment, please try again later", allergy: null, products: null})
+        }
+      });
+    }
+    catch(error){
+      console.log(error)
+      res.render('allergyInfo', {title: 'Allergy Info', error: "Allergy Info is not available at the moment, please try again later", allergy: null, products: null})
+    }
+  // var call = clientQuery.allergyInfo({});
+  // call.on('data', function(response) {
+  //   console.log("If you have a " + response.allergy + " allergy, please avoid the following products: " + response.products);
+  // });
+}); //allergy info
+
+router.get('/contactSupport', function(req, res, next) {
+  var call = clientQuery.contactSupport();
+  var name //= readlineSync.question("What is your name?: ")
+
+  call.on('data', function(resp){
+    console.log(resp.name + ": "+resp.message)
+  });
+
+  call.on('end', function(){})
+
+  call.on('error', function(e){
+    console.log("Cannot connect to the Chat Service ")
+  })
+  call.write({
+    message: name+" has joined the chat",
+    name: name
+  })
+
+  var rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
+
+  rl.on("line", function(message){
+    if(message.toLowerCase() === 'quit'){
+      call.write({
+        message: name + " left the chatroom",
+        name: name
+      })
+      call.end();
+      rl.close();
+    }
+
+    else{
+      call.write({
+        message: message,
+        name: name
+      })
+
+    }
+  })
+}); //find product
+
+router.get('/customerFeedback', function(req, res, next) {
+  var feedback = req.query.feedback
+  var msg
+  if(feedback){
+    try{
+      clientQuery.customerFeedback({ feedback: feedback}, function (error, response){
+        try{
+          res.render('customerFeedback', {title: 'Customer Feedback', error: error, msg: response.msg});
+        }
+        catch (error) {
+          console.log(error)
+          res.render('customerFeedback', {title: 'Customer Feedback', error: "Customer Feedback is not available at the moment, please try again later", msg: null})
+        }
+      });
+    }
+    catch(error){
+      console.log(error)
+      res.render('customerFeedback', {title: 'Customer Feedback', error: "Customer Feedback is not available at the moment, please try again later", msg: null})
+    }
+  }  else{
+      res.render('customerFeedback', {title: 'Customer Feedback', error: null, msg:msg })
+    }
+}); //customer feedback
+
+router.get('/queueTime', function(req, res, next) {
+  var tillNumber, waitTime
+    try{
+      clientAssisstance.queueTime({}, function (error, response){
+        try{
+          res.render('queueTime', {title: 'Queue Time', error: error, tillNumber: response.tillNumber, waitTime: response.waitTime});
+        }
+        catch (error) {
+          console.log(error)
+          res.render('queueTime', {title: 'Queue Time', error: "Queue Time is not available at the moment, please try again later", tillNumber: null, waitTime: null})
+        }
+      });
+    }
+    catch(error){
+      console.log(error)
+      res.render('queueTime', {title: 'Queue Time', error: "Queue Time is not available at the moment, please try again later", tillNumber: null, waitTime: null})
+    }
+
+}); //queueTime
+
+router.get('/unlockTrolley', function(req, res, next) {
+  var trolleyNumber = req.query.trolleyNumber
+  var unlockMsg
+  if(!isNaN(trolleyNumber)){
+    try{
+      clientAssisstance.unlockTrolley({ trolleyNumber: trolleyNumber}, function (error, response){
+        try{
+          res.render('unlockTrolley', {title: 'Unlock Trolley', error: error, unlockMsg: response.unlockMsg});
+        }
+        catch (error) {
+          console.log(error)
+          res.render('unlockTrolley', {title: 'Unlock Trolley', error: "Unlock Trolley is not available at the moment, please try again later", unlockMsg: null})
+        }
+      });
+    }
+    catch(error){
+      console.log(error)
+      res.render('unlockTrolley', {title: 'Unlock Trolley', error: "Unlock Trolley is not available at the moment, please try again later", unlockMsg: null})
+    }
+  }  else{
+      res.render('unlockTrolley', {title: 'Unlock Trolley', error: null, unlockMsg:unlockMsg })
+    }
+}); //unlock trolley
+
+router.get('/locateCar', function(req, res, next) {
+  var carReg = req.query.carReg
+  var parkingSpace
+  if(!isNaN(carReg)){
+    try{
+      clientAssisstance.locateCar({ carReg: carReg}, function (error, response){
+        try{
+          res.render('locateCar', {title: 'Locate Car', error: error, parkingSpace: response.parkingSpace});
+        }
+        catch (error) {
+          console.log(error)
+          res.render('locateCar', {title: 'Locate Car', error: "Locate Car is not available at the moment, please try again later", parkingSpace: null})
+        }
+      });
+    }
+    catch(error){
+      console.log(error)
+      res.render('locateCar', {title: 'Locate Car', error: "Locate Car is not available at the moment, please try again later", parkingSpace: null})
+    }
+  }  else{
+      res.render('locateCar', {title: 'Locate Car', error: null, parkingSpace:parkingSpace })
+    }
+}); //locate car
 
 module.exports = router;

@@ -11,17 +11,12 @@
       <%= error %>
     <% } %>
 
-    <form action="/applyDiscount" method="get">
-
+    <form action="/allergyInfo" method="get">
     </form>
 
-    <% if(!isNaN(total)) { %>
-      <b>Your new total is: €</b><%= total %>
-    <% } %>
-
-    <% if (typeof discountConf === 'string') { %>
-    <b><%= discountConf %>
-<% } %> </b>
+    <% if (typeof allergy === 'string' && typeof products === 'string') { %>
+    <b>ANS:</b> If you have a <%= allergy %> allergy, please avoid the following products: <%= products %>
+<% } %>
 
 <h2>Retail Service</h2>
 <a href="/">Add To Cart</a>

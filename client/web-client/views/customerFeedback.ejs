@@ -11,17 +11,16 @@
       <%= error %>
     <% } %>
 
-    <form action="/applyDiscount" method="get">
-
+    <form action="/customerFeedback" method="get">
+      <label for="feedback">Feedback</label>
+      <input type="text" name="feedback" placeholder="Please enter your feedback">
+      <br/>
+      <button type="submit">Submit feedback</button>
     </form>
 
-    <% if(!isNaN(total)) { %>
-      <b>Your new total is: €</b><%= total %>
-    <% } %>
-
-    <% if (typeof discountConf === 'string') { %>
-    <b><%= discountConf %>
-<% } %> </b>
+    <% if (typeof msg === 'string') { %>
+    <b><%= msg %>
+<% } %></b>
 
 <h2>Retail Service</h2>
 <a href="/">Add To Cart</a>
@@ -43,6 +42,7 @@
 <a href="/queueTime">See Queue Times</a>
 <a href="/unlockTrolley">Unlock Trolley</a>
 <a href="/locateCar">Locate Car</a>
+
 
   </body>
 </html>

@@ -11,17 +11,16 @@
       <%= error %>
     <% } %>
 
-    <form action="/applyDiscount" method="get">
-
+    <form action="/unlockTrolley" method="get">
+      <label for="trolleyNumber">Trolley Number</label>
+      <input type="number" name="trolleyNumber" placeholder="Please enter trolley number">
+      <br/>
+      <button type="submit">Unlock trolley!</button>
     </form>
 
-    <% if(!isNaN(total)) { %>
-      <b>Your new total is: €</b><%= total %>
-    <% } %>
-
-    <% if (typeof discountConf === 'string') { %>
-    <b><%= discountConf %>
-<% } %> </b>
+    <% if (typeof unlockMsg === 'string') { %>
+    <b><%= unlockMsg %>
+<% } %></b>
 
 <h2>Retail Service</h2>
 <a href="/">Add To Cart</a>

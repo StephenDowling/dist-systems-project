@@ -436,8 +436,6 @@ const shopTills = [
     { tillNumber: 5, waitTime: Math.floor(Math. random()*10) }
 
 ];
-var allergyDataString = JSON.stringify(allergyData);
-var shopTillsString = JSON.stringify(shopTills);
 
 function priceLookUp(call, callback) {
   // Array of items with name and price
@@ -461,7 +459,6 @@ function priceLookUp(call, callback) {
   callback(null, { priceMsg });
 }
 
-
 function findProduct(call, callback) {
   // Array of products with name and location
   const products = [
@@ -484,7 +481,6 @@ function findProduct(call, callback) {
   callback(null, { location });
 }
 
-
 function allergyInfo(call, callback) {
 
   for (var i = 0; i < allergyData.length; i++) {
@@ -496,8 +492,6 @@ function allergyInfo(call, callback) {
   call.end();
 
 }
-
-
 
 var clients = {}
 
@@ -573,42 +567,13 @@ function locateCar(call, callback){
     parkingSpace = "You are parked in space number 63"
   }
   else{
-    parkingSpace = "Unable to locate your reg in the car park, please try again"
+    parkingSpace = "Unable to locate your car in the car park, please try again"
   }
   callback(null, {
     parkingSpace:parkingSpace
   })
 }
 
-// function sendDataToClients() {
-//   wss.clients.forEach(function each(client) {
-//     if (client.readyState === WebSocket.OPEN) {
-//       client.send(allergyDataString);
-//       console.log(JSON.stringify(allergyDataString))
-//     }
-//   });
-// }
-//
-// function sendQueuesToClients() {
-//   wss.clients.forEach(function each(client) {
-//     if (client.readyState === WebSocket.OPEN) {
-//       client.send(shopTillsString);
-//       console.log(JSON.stringify(shopTillsString))
-//     }
-//   });
-// }
-// // sendDataToClients(shopTills)
-// // sendDataToClients(allergyData)
-// sendDataToClients();
-// sendQueuesToClients();
-//
-// setTimeout(() => {
-//   const randomData = allergyData.toString();
-//   const shopTillsStringAgain = shopTills.toString();
-//   sendDataToClients(randomData);
-//   sendDataToClients(shopTillsStringAgain);
-//   sendQueuesToClients();
-// }, 5000);
 
 var server = new grpc.Server()
 server.addService(retail_proto.Cart.service, { addToCart: addToCart, removeFromCart: removeFromCart, totalValue:totalValue, applyDiscount: applyDiscount, processPayment: processPayment })

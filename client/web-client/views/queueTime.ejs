@@ -11,17 +11,12 @@
       <%= error %>
     <% } %>
 
-    <form action="/applyDiscount" method="get">
-
+    <form action="/queueTime" method="get">
     </form>
 
-    <% if(!isNaN(total)) { %>
-      <b>Your new total is: €</b><%= total %>
-    <% } %>
-
-    <% if (typeof discountConf === 'string') { %>
-    <b><%= discountConf %>
-<% } %> </b>
+    <% if (!isNaN(tillNumber) && !isNaN(waitTime)) { %>
+    <b>ANS:</b> Till number <%= tillNumber %> wait time is <%= waitTime %> minutes
+<% } %>
 
 <h2>Retail Service</h2>
 <a href="/">Add To Cart</a>
@@ -43,6 +38,7 @@
 <a href="/queueTime">See Queue Times</a>
 <a href="/unlockTrolley">Unlock Trolley</a>
 <a href="/locateCar">Locate Car</a>
+
 
   </body>
 </html>
