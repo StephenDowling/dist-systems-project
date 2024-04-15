@@ -11,22 +11,10 @@
       <%= error %>
     <% } %>
 
-    <form action="/" method="post">
-      <label for="name">Name of Product</label>
-      <input type="text" name="name">
-      <br/>
-      <label for="price">Price of Product</label>
-      <input type="number" name="price">
-      <br/>
-      <button type="submit">Add to Cart!</button>
-    </form>
-
-    <% if(typeof msg === 'string') { %>
-      <b>ANS:</b><%= msg %>
-    <% } %>
+    <p>Please select from the services below: </p>
 
     <h2>Retail Service</h2>
-    <a href="/">Add To Cart</a>
+    <a href="/addToCart">Add To Cart</a>
     <a href="/removeFromCart">Remove From Cart</a>
     <a href="/totalValue">Total Value</a>
     <a href="/applyDiscount">Apply Discount</a>

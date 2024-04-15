@@ -23,272 +23,6 @@ var client = new retail_proto.Cart("0.0.0.0:40000", grpc.credentials.createInsec
 var clientQuery = new query_proto.Query("0.0.0.0:40000", grpc.credentials.createInsecure());
 var clientAssisstance = new assisstance_proto.Assisstance("0.0.0.0:40000", grpc.credentials.createInsecure());
 
-//WebSocket
-
-// wss.on('connection', function connection(ws) {
-//   console.log('WebSocket connected');
-//
-//   // Handle messages from the client
-//   ws.on('message', function incoming(message) {
-//     console.log('Received message:', message);
-//     // You can handle the received message here and send responses if needed
-//   });
-//
-//   // Handle WebSocket disconnection
-//   ws.on('close', function close() {
-//     console.log('WebSocket disconnected');
-//   });
-// });
-
-// wss.on('connection', function(ws) {
-//     ws.on('message', function(message) {
-//
-//         //console.log('Received message from client:', message);
-//         wss.clients.forEach(function(client) {
-//             if (client !== ws && client.readyState === WebSocket.OPEN) {
-//                 client.send(message);
-//             }
-//         });
-//         // Parse message as JSON
-//         try {
-//             const data = message;
-//             const parsedMessage = Buffer.from(data)
-//             const messageString = parsedMessage.toString('utf8');
-//             console.log('Parsed message:', messageString);
-//             if (data.method === 'allergyInfo') {
-//                 // Call the appropriate gRPC method
-//                 allergyInfo(data.parameters);
-//             }
-//
-//             if (data.method === 'queueTime') {
-//                 // Call the appropriate gRPC method
-//                 queueTime(data.parameters);
-//             }
-//
-//             // Handle the message
-//
-//
-//             // Example: Make gRPC call based on the message
-//             if (data.method === 'contactSupport') {
-//                 // Call the appropriate gRPC method
-//                 contactSupport(data.parameters);
-//             }
-//         } catch (error) {
-//             console.error('Error parsing message:', error);
-//         }
-//     });
-// });
-//
-//
-// // Serve static files from the 'public' directory
-// app.use(express.static(path.join(__dirname, 'public')));
-//
-// // Parse JSON request bodies
-// app.use(express.json());
-//
-// //cart service
-//
-// // addToCart
-// app.post('/addToCart', (req, res) => {
-//   // You can access the request body here
-//
-//   const itemName = req.body.itemName;
-//   const itemPrice = req.body.itemPrice;
-//   console.log("Request.body = "+req.body)
-//   console.log("Request.body.itemName = "+req.body.itemName)
-//   console.log("Request.body.price = "+req.body.itemPrice)
-//   // Call your gRPC function totalValue here
-//   // Check if itemName and itemPrice are defined
-//   if (itemName && itemPrice) {
-//     // Call your gRPC function addToCart here with itemName and itemPrice
-//     addToCart({ name: itemName, price: itemPrice }, (error, response) => {
-//       if (error) {
-//         res.status(500).send('Error adding item to the cart');
-//       } else {
-//         res.status(200).json(response);
-//       }
-//     });
-//   } else {
-//     // Respond with a 400 Bad Request if itemName or itemPrice is missing
-//     res.status(400).send('Item name or price is missing');
-//   }
-// });
-//
-// //removeFromCart
-// app.delete('/removeFromCart', (req, res) => {
-//   const itemName = req.body.itemName;
-//   console.log("item to remove = "+itemName);
-//   removeFromCart(itemName, (error, response) => {
-//     if (error) {
-//       res.status(500).send('Error removing item from the cart');
-//     } else {
-//       res.status(200).send('Item removed from the cart');
-//     }
-//   });
-// })
-//
-// // Define route for handling GET requests to /totalValue
-// app.get('/totalValue', (req, res) => {
-//   // You can access the request body here
-//   const requestData = req.body;
-//
-//   // Call your gRPC function totalValue here
-//   totalValue(requestData, (error, response) => {
-//     if (error) {
-//       res.status(500).send('Error getting total value of the cart');
-//     } else {
-//       res.status(200).json(response);
-//     }
-//   });
-// });
-//
-// // Define route for handling GET requests to /applyDiscount
-// app.get('/applyDiscount', (req, res) => {
-//   // You can access the request body here
-//   const requestData = req.body;
-//
-//   // Call your gRPC function applyDiscount here
-//   applyDiscount(requestData, (error, response) => {
-//     if (error) {
-//       res.status(500).send('Error applying discount to this cart');
-//     } else {
-//       res.status(200).json(response);
-//     }
-//   });
-// });
-//
-// // process payment
-// app.delete('/processPayment', (req, res) => {
-//   const cardNo = req.body.cardNo;
-//   console.log("card number to process payment "+cardNo)
-//
-//   processPayment(cardNo, (error, response) => {
-//     if (error) {
-//       res.status(500).send('Error processing payment');
-//     } else {
-//       res.status(200).send('Payment processed');
-//     }
-//   })
-// })
-//
-// //query service
-//
-// //price look up
-// app.get('/priceLookUp', (req, res) => {
-//   // You can access the request query parameters here
-//   const itemName = req.query.itemName;
-//   console.log("app.get() " + itemName);
-//
-//   priceLookUp(itemName, (error, response) => {
-//     if (error) {
-//       // Handle error
-//       console.error('Error:', error);
-//       // Send error response if needed
-//       res.status(500).send('Error processing price lookup');
-//     } else {
-//       // Send response with priceMsg
-//       res.status(200).json(response);
-//     }
-//   });
-// });
-//
-// //find product
-// app.get('/findProduct', (req, res) => {
-//   // You can access the request query parameters here
-//   const itemName = req.query.itemName;
-//   console.log("app.get() " + itemName);
-//
-//   findProduct(itemName, (error, response) => {
-//     if (error) {
-//       // Handle error
-//       console.error('Error:', error);
-//       // Send error response if needed
-//       res.status(500).send('Error processing findProduct');
-//     } else {
-//       // Send response with priceMsg
-//       res.status(200).json(response);
-//     }
-//   });
-// });
-//
-// //unlock trolley
-// app.get('/unlockTrolley', (req, res) => {
-//   // You can access the request query parameters here
-//   const trolleyNumber = req.query.trolleyNumber;
-//   console.log("app.get() " + trolleyNumber);
-//
-//   unlockTrolley(trolleyNumber, (error, response) => {
-//     if (error) {
-//       // Handle error
-//       console.error('Error:', error);
-//       // Send error response if needed
-//       res.status(500).send('Error processing unlockTrolley');
-//     } else {
-//       // Send response with priceMsg
-//       res.status(200).json(response);
-//     }
-//   });
-// });
-//
-// //locate Car
-// app.get('/locateCar', (req, res) => {
-//   // You can access the request query parameters here
-//   const carReg = req.query.carReg;
-//
-//   console.log("app.get() " + carReg);
-//
-//   locateCar(carReg, (error, response) => {
-//     if (error) {
-//       // Handle error
-//       console.error('Error:', error);
-//       // Send error response if needed
-//       res.status(500).send('Error processing locateCar');
-//     } else {
-//       // Send response with priceMsg
-//       res.status(200).json(response);
-//     }
-//   });
-// });
-//
-// //price look up
-//
-// app.post('/customerFeedback', (req, res) => {
-//   // You can access the request body here
-//
-//   const feedback = req.body.feedback;
-//   console.log("Request body:", req.body);
-// if (req.body && req.body.feedback) {
-//   console.log("Feedback:", req.body.feedback);
-// } else {
-//   console.error("Missing feedback in request body");
-// }
-//   // Call your gRPC function totalValue here
-//   // Check if itemName and itemPrice are defined
-//   if (feedback) {
-//     // Call your gRPC function addToCart here with itemName and itemPrice
-//     customerFeedback({ feedback: feedback}, (error, response) => {
-//       if (error) {
-//         res.status(500).send('Error adding item to the cart');
-//       } else {
-//         res.status(200).json(response);
-//       }
-//     });
-//   } else {
-//     // Respond with a 400 Bad Request if itemName or itemPrice is missing
-//     res.status(400).send('Item name or price is missing');
-//   }
-// });
-//
-//
-// app.listen(3000, () => {
-//   console.log("App listening on port 3000")
-// })
-//
-// const PORT = process.env.PORT || 4000;
-// newServer.listen(PORT, function () {
-//   console.log(`WebSocket server listening on port ${PORT}`);
-// });
-
 // ********** CART SERVICE ********** //
 
 var msg = ""
@@ -300,6 +34,7 @@ var item = {
 }
 var total = 0
 
+//addToCart
 function addToCart(call, callback) {
     call.on('data', function(request) {
       var newItem = {
@@ -322,33 +57,32 @@ function addToCart(call, callback) {
     call.on('error', function(e) {
       console.log("An error occured")
     })
-}
+}//addToCart
 
+//remove from cart
 function removeFromCart(call, callback) {
   // Extract the request object from the gRPC call
   const request = call.request
-  console.log("call = "+call)
   console.log("Name of item to remove = "+call.request.name)
 
-  // Check if request is defined and has a 'name' property
+
   if (!request) {
     callback(new Error('Invalid request. Missing item name.'));
     return;
   }
 
-  // Check if the item is in the cart
+  //check if the item is in the cart
   var found = false;
   for (var i = 0; i < cart.length; i++) {
     if (request.name.toLowerCase() === cart[i].name.toLowerCase()) {
-      // Remove the item from the cart
+      //Remove the item from the cart
       total = total-cart[i].price;
       found = true;
       cart.splice(i, 1); //actual removal
-      break; // Exit the loop after removing the item
+      break; //exit the loop after removing the item
     }
   }
-
-  // Prepare the response message
+  //response message
   var responseMsg = found ? request.name + " was removed successfully" : request.name+ " was not found in the cart";
   console.log(responseMsg)
   // Send the response back to the client
@@ -357,13 +91,15 @@ function removeFromCart(call, callback) {
   });
 }
 
+//totalValue
 function totalValue(call, callback) {
   total=Math.round((total + Number.EPSILON) * 100) / 100
   callback(null, {
     total:total
   });
-}
+}//totalValue
 
+//applyDiscount
 function applyDiscount(call, callback) {
   var discountConf
   if(total == 0){
@@ -380,8 +116,9 @@ function applyDiscount(call, callback) {
     total:total,
     discountConf: discountConf
   })
-}
+}//applyDiscount
 
+//processPayment
 function processPayment(call, callback){
   var paymentConfirmation;
   const request = call.request;
@@ -402,7 +139,7 @@ function processPayment(call, callback){
   callback(null, {
     paymentConfirmation: paymentConfirmation
   })
-}
+}//processPayment
 
 // ********** QUERY SERVICE ********** //
 
@@ -429,6 +166,7 @@ var allergyData = [
   }
 ]
 const shopTills = [
+  //each till number has a randomly generated number of minutes wait time (between 0 and 9)
     { tillNumber: 1, waitTime: Math.floor(Math. random()*10) },
     { tillNumber: 2, waitTime: Math.floor(Math. random()*10) },
     { tillNumber: 3, waitTime: Math.floor(Math. random()*10) },
@@ -437,6 +175,7 @@ const shopTills = [
 
 ];
 
+//priceLookUp
 function priceLookUp(call, callback) {
   // Array of items with name and price
   const items = [
@@ -457,8 +196,9 @@ function priceLookUp(call, callback) {
 
   // Send the priceMsg back to the client
   callback(null, { priceMsg });
-}
+}//priceLookUp
 
+//findProduct
 function findProduct(call, callback) {
   // Array of products with name and location
   const products = [
@@ -479,22 +219,26 @@ function findProduct(call, callback) {
 
   // Send the location back to the client
   callback(null, { location });
-}
+}//findProduct
 
+//allergyInfo
 function allergyInfo(call, callback) {
-
-  for (var i = 0; i < allergyData.length; i++) {
-    call.write({
-      allergy: allergyData[i].allergy,
-      products: allergyData[i].products
-    });
+  try{
+    for (var i = 0; i < allergyData.length; i++) {
+      call.write({
+        allergy: allergyData[i].allergy,
+        products: allergyData[i].products
+      });
+    }
+    call.end();
+  } catch(error){
+    console.log("Error in allergyInfo", error)
   }
-  call.end();
+}//allergyInfo
 
-}
 
 var clients = {}
-
+//contactSupport
 function contactSupport(call){
     call.on('data', function(chat_message){
       if(!(chat_message.name in clients)){
@@ -515,8 +259,9 @@ function contactSupport(call){
     call.on('error', function(e){
       console.log(e)
     })
-}
+}//contactSupport
 
+//customerFeedback
 function customerFeedback(call, callback){
 
   var feedback = call.request.feedback;
@@ -526,10 +271,11 @@ function customerFeedback(call, callback){
   callback(null, {
     msg: "Your feedback has been received, thank you"
   })
-}
+}//customerFeedback
 
 // ********** ASSISSTANCE SERVICE ********** //
 
+//queueTime
 function queueTime(call, callback){
 
   for (var i = 0; i < shopTills.length; i++) {
@@ -539,8 +285,9 @@ function queueTime(call, callback){
     });
   }
   call.end();
-}
+}//queueTime
 
+//unlockTrolley
 function unlockTrolley(call, callback){
   var trolleyNumber = call.request.trolleyNumber
   if(isNaN(trolleyNumber)){
@@ -551,8 +298,9 @@ function unlockTrolley(call, callback){
   callback(null, {
     unlockMsg:unlockMsg
   })
-}
+}//unlockTrolley
 
+//locateCar
 function locateCar(call, callback){
 
   var carReg = call.request.carReg
@@ -572,7 +320,7 @@ function locateCar(call, callback){
   callback(null, {
     parkingSpace:parkingSpace
   })
-}
+}//locateCar
 
 
 var server = new grpc.Server()

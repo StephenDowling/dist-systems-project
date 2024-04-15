@@ -24,47 +24,54 @@ var clientAssisstance = new assisstance_proto.Assisstance("0.0.0.0:40000", grpc.
 //addToCart
 router.get('/', function(req, res, next) {
   // Render your form or any other content for adding items to the cart
-  res.render('index', { title: 'Add To Cart', error: null, msg: null });
+  res.render('index', { title: 'Welcome to the Automated Kiosk!', error: null});
 });
 
-router.post('/', function(req, res, next) {
-  var name = req.query.name
-  var price = req.query.price
+router.get('/addToCart', function(req, res, next) {
+  res.render('addToCart', { title: 'Add To Cart', error: null, msg: null });
+})
+
+router.post('/addToCart', function(req, res, next) {
+  var name = req.body.name
+  var price = req.body.price
+  console.log(name)
+  console.log(price)
   var msg
   if(!isNaN(price)){
     try{
       client.addToCart({ name: name, price: price}, function (error, response){
         try{
-          res.render('index', {title: 'Add To Cart', error: error, msg: response.msg});
+          res.render('addToCart', {title: 'Add To Cart', error: error, msg: response.msg});
         }
         catch (error) {
           console.log(error)
-          res.render('index', {title: 'Add To Cart', error: "Add To Cart is not available at the moment, please try again later", msg: null})
+          res.render('addToCart', {title: 'Add To Cart', error: "Add To Cart is not available at the moment, please try again later", msg: null})
         }
       });
     }
     catch(error){
       console.log(error)
-      res.render('index', {title: 'Add To Cart', error: "Add To Cart is not available at the moment, please try again later", msg: null})
+      res.render('addToCart', {title: 'Add To Cart', error: "Add To Cart is not available at the moment, please try again later", msg: null})
     }
   } else{
-    res.render('index', {title: 'Add To Cart', error: null, msg:msg })
+    res.render('addToCart', {title: 'Add To Cart', error: null, msg:msg })
   }
 }); //add to cart
 
 //Remove From Cart
-router.get('/removeFromCart', function(req, res, next) {
-  // Render your form or any other content for adding items to the cart
-  res.render('removeFromCart', { title: 'Remove From Cart', error: null, msg: null });
-});
+// router.get('/removeFromCart', function(req, res, next) {
+//   // Render your form or any other content for adding items to the cart
+//   res.render('removeFromCart', { title: 'Remove From Cart', error: null, msg: null });
+// });
 
-router.delete('/removeFromCart', function(req, res, next) {
+router.get('/removeFromCart', function(req, res, next) {
   var name = req.query.name
-  console.log("req = "+req);
-  console.log("req.query = "+req.query);
-  console.log("req.query.name = "+req.query.name)
+  // console.log("req = "+req);
+  // console.log("req.query = "+req.query);
+  // console.log("req.query.name = "+req.query.name)
+  // console.log("req.name = "+req.name);
   var removeMsg = null;
-  if(isNaN(name)){
+  if(name){
     try{
       client.removeFromCart({ name: name}, function (error, response){
         try{
@@ -211,6 +218,10 @@ router.get('/findProduct', function(req, res, next) {
 }); //find product
 
 router.get('/allergyInfo', function(req, res, next) {
+  res.render('allergyInfo', { title: 'Allergy Info', error: null});
+})
+
+router.get('/allergyInfo', function(req, res, next) {
   var allergy
   var products
     try{
@@ -228,15 +239,16 @@ router.get('/allergyInfo', function(req, res, next) {
       console.log(error)
       res.render('allergyInfo', {title: 'Allergy Info', error: "Allergy Info is not available at the moment, please try again later", allergy: null, products: null})
     }
-  // var call = clientQuery.allergyInfo({});
-  // call.on('data', function(response) {
-  //   console.log("If you have a " + response.allergy + " allergy, please avoid the following products: " + response.products);
-  // });
 }); //allergy info
 
 router.get('/contactSupport', function(req, res, next) {
+  res.render('contactSupport', { title: 'Contact Support', error: null});
+})
+
+//Contact Support
+router.get('/contactSupport', function(req, res, next) {
   var call = clientQuery.contactSupport();
-  var name //= readlineSync.question("What is your name?: ")
+  var name;
 
   call.on('data', function(resp){
     console.log(resp.name + ": "+resp.message)
@@ -275,8 +287,9 @@ router.get('/contactSupport', function(req, res, next) {
 
     }
   })
-}); //find product
+}); //Contact Support
 
+//Customer Feedback
 router.get('/customerFeedback', function(req, res, next) {
   var feedback = req.query.feedback
   var msg
@@ -301,6 +314,12 @@ router.get('/customerFeedback', function(req, res, next) {
     }
 }); //customer feedback
 
+//Queue Time
+
+router.get('/queueTime', function(req, res, next) {
+  res.render('queueTime', { title: 'Queue Time', error: null, tillNumber: null, waitTime: null });
+})
+
 router.get('/queueTime', function(req, res, next) {
   var tillNumber, waitTime
     try{
@@ -321,6 +340,7 @@ router.get('/queueTime', function(req, res, next) {
 
 }); //queueTime
 
+//unlock trolley
 router.get('/unlockTrolley', function(req, res, next) {
   var trolleyNumber = req.query.trolleyNumber
   var unlockMsg
@@ -345,6 +365,7 @@ router.get('/unlockTrolley', function(req, res, next) {
     }
 }); //unlock trolley
 
+//locate car
 router.get('/locateCar', function(req, res, next) {
   var carReg = req.query.carReg
   var parkingSpace
