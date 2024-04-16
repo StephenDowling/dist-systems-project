@@ -4,6 +4,8 @@ const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
 const http = require('http');
 const WebSocket = require('ws');
+var {createServer} = require("http");
+var { Server } = require("socket.io");
 
 const app = express();
 const newServer = http.createServer(app);
@@ -25,6 +27,7 @@ var clientAssisstance = new assisstance_proto.Assisstance("0.0.0.0:40000", grpc.
 
 // ********** CART SERVICE ********** //
 
+//declaring variables globally for us in numerous functions
 var msg = ""
 var removeMsg = ""
 var cart = [];
@@ -36,38 +39,38 @@ var total = 0
 
 //addToCart
 function addToCart(call, callback) {
-    call.on('data', function(request) {
+    call.on('data', function(request) { //create new item with the name and price provided
       var newItem = {
         name: request.name,
         price: request.price
       }
-      cart.push(newItem)
-      total+=parseFloat(request.price)
-      console.log("Added item: "+newItem.name)
-      console.log(cart)
-      console.log("total is now "+total)
+      cart.push(newItem) //add this new item to the cart array
+      total+=parseFloat(request.price) //increase the total by the price
+      console.log("Added item: "+newItem.name) //printed to the console for clarity
+      console.log(cart) //print the cart for clarity
+      console.log("total is now "+total) //print new total for clarity
     })
 
     call.on('end', function() {
       callback(null, {
-        msg: "item(s) added succesfully"
+        msg: "item(s) added succesfully" //response message to client
       })
     })
 
     call.on('error', function(e) {
-      console.log("An error occured")
+      console.log("An error occured") //in case of error
     })
 }//addToCart
 
 //remove from cart
 function removeFromCart(call, callback) {
-  // Extract the request object from the gRPC call
+  //extract request object from the gRPC call
   const request = call.request
-  console.log("Name of item to remove = "+call.request.name)
+  console.log("Name of item to remove = "+call.request.name) //for clarity
 
 
   if (!request) {
-    callback(new Error('Invalid request. Missing item name.'));
+    callback(new Error('Invalid request. Missing item name.')); //handle errors
     return;
   }
 
@@ -85,7 +88,7 @@ function removeFromCart(call, callback) {
   //response message
   var responseMsg = found ? request.name + " was removed successfully" : request.name+ " was not found in the cart";
   console.log(responseMsg)
-  // Send the response back to the client
+  //send the response back to the client
   callback(null, {
     removeMsg: responseMsg
   });
@@ -93,26 +96,26 @@ function removeFromCart(call, callback) {
 
 //totalValue
 function totalValue(call, callback) {
-  total=Math.round((total + Number.EPSILON) * 100) / 100
+  total=Math.round((total + Number.EPSILON) * 100) / 100 //round it up to two decimal places
   callback(null, {
-    total:total
+    total:total //send it back to the client
   });
 }//totalValue
 
 //applyDiscount
 function applyDiscount(call, callback) {
-  var discountConf
+  var discountConf //response message
   if(total == 0){
-    discountConf = "There is nothing in your cart";
+    discountConf = "There is nothing in your cart"; //handle errors
   }
   else{
-    total = total*0.9
-    total = Math.round((total + Number.EPSILON) * 100) / 100
-    console.log(total)
-    discountConf = "10% has been applied! Your new total is €"+total
+    total = total*0.9 //reduce by ten percent
+    total = Math.round((total + Number.EPSILON) * 100) / 100 //round up to two decimal places
+    console.log(total) //for clarity
+    discountConf = "10% has been applied! Your new total is €"+total //response message
   }
 
-  callback(null, {
+  callback(null, { //send back to the client
     total:total,
     discountConf: discountConf
   })
@@ -120,30 +123,30 @@ function applyDiscount(call, callback) {
 
 //processPayment
 function processPayment(call, callback){
-  var paymentConfirmation;
-  const request = call.request;
+  var paymentConfirmation; //response message
+  const request = call.request; //get the request from the call object
 
-  if(cart.length === 0){
+  if(cart.length === 0){//exception handling
     paymentConfirmation = "There is nothing in your cart!"
   }
-  else if(request.cardNo.length!=16){
+  else if(request.cardNo.length!=16){//more exception handling
     paymentConfirmation = "Your card number must be 16 digits"
   }
   else{
     paymentConfirmation = "Congratulations, your payment has been processed. Your cart is now empty. Thank you for shopping with us!"
-    total = 0;
-    cart = [];
-    console.log(paymentConfirmation)
-    console.log("Cart = "+cart)
+    total = 0; //clear total
+    cart = []; //clear cart
+    console.log(paymentConfirmation) //for clarity
+    console.log("Cart = "+cart) //for clarity
   }
   callback(null, {
-    paymentConfirmation: paymentConfirmation
+    paymentConfirmation: paymentConfirmation //send back to client
   })
 }//processPayment
 
 // ********** QUERY SERVICE ********** //
 
-var allergyData = [
+var allergyData = [ //array of data about allergies that will be sent to the client when requested
   {
     allergy:"nuts",
     products: "Cookies, Cereals, Sauces"
@@ -165,15 +168,6 @@ var allergyData = [
     products: "Crab, Lobster, Shrimp"
   }
 ]
-const shopTills = [
-  //each till number has a randomly generated number of minutes wait time (between 0 and 9)
-    { tillNumber: 1, waitTime: Math.floor(Math. random()*10) },
-    { tillNumber: 2, waitTime: Math.floor(Math. random()*10) },
-    { tillNumber: 3, waitTime: Math.floor(Math. random()*10) },
-    { tillNumber: 4, waitTime: Math.floor(Math. random()*10) },
-    { tillNumber: 5, waitTime: Math.floor(Math. random()*10) }
-
-];
 
 //priceLookUp
 function priceLookUp(call, callback) {
@@ -184,40 +178,40 @@ function priceLookUp(call, callback) {
     { name: "milk", price: 2.00 }
   ];
 
-  const itemName = call.request.name.toLowerCase();
+  const itemName = call.request.name.toLowerCase(); //extract name from call object
 
-  // Find the item in the array
+  //find the item in the array
   const item = items.find(item => item.name === itemName);
 
-  // Prepare response message based on whether the item is found or not
+  //response message based on whether the item is found or not
   const priceMsg = item
     ? `The cost of ${item.name} is €${item.price.toFixed(2)}`
     : "Unable to locate product. Please try a different product name.";
 
-  // Send the priceMsg back to the client
+  //send priceMsg back to the client
   callback(null, { priceMsg });
 }//priceLookUp
 
 //findProduct
 function findProduct(call, callback) {
-  // Array of products with name and location
+  //array of products with name and location
   const products = [
     { name: "bread", location: "aisle 1" },
     { name: "tea", location: "aisle 2" },
     { name: "milk", location: "aisle 3" }
   ];
 
-  const name = call.request.name.toLowerCase();
+  const name = call.request.name.toLowerCase(); //extract name
 
-  // Find the product in the array
+  //find the product in the array
   const product = products.find(product => product.name === name);
 
-  // Prepare response message based on whether the product is found or not
+  //response message based on whether the product is found or not
   const location = product
     ? `${product.name} is located on ${product.location}`
     : "Unable to locate product, please try a different product name";
 
-  // Send the location back to the client
+  //send the location back to the client
   callback(null, { location });
 }//findProduct
 
@@ -226,37 +220,69 @@ function allergyInfo(call, callback) {
   try{
     for (var i = 0; i < allergyData.length; i++) {
       call.write({
-        allergy: allergyData[i].allergy,
+        allergy: allergyData[i].allergy, //write the data from the array declared earlier
         products: allergyData[i].products
       });
     }
     call.end();
   } catch(error){
-    console.log("Error in allergyInfo", error)
+    console.log("Error in allergyInfo", error) //handle errors
   }
 }//allergyInfo
 
-
-var clients = {}
 //contactSupport
+var clients = {} //for storing names of people who log onto the chat, so customer is not asked name twice
+
+
+//creating the server
+var httpServer = createServer ((req, res) => {
+});
+
+//description about the metadata (head), can use any methods
+var io = new Server(httpServer, {
+cors:{
+  origin: '*',
+  methods: '*'
+}
+});
+
+//get the connection
+io.on("connection", function(socket){
+  console.log(`connect ${socket.id}`);
+//capturing the communication
+  socket.on('chat message', function(msg){
+    io.emit('chat message', msg);
+  });
+//capturing information about the disconnection
+  socket.on("disconnect", function(reason){
+    console.log(`disconnect ${socket.id} due to ${reason}`)
+  });
+});
+
+//server is listening in this port
+httpServer.listen(8081);
+
 function contactSupport(call){
+
+
+
     call.on('data', function(chat_message){
-      if(!(chat_message.name in clients)){
-        clients[chat_message.name] = {
+      if(!(chat_message.name in clients)){ //if name is not in clients array do this
+        clients[chat_message.name] = { //add the name to the clients array
           name: chat_message.name,
           call: call}
       }
       for(var client in clients){
         clients[client].call.write({
-          name: chat_message.name,
-          message: chat_message.message
+          name: chat_message.name, //name of person sending the message
+          message: chat_message.message //actual message
         })
       }
     })
     call.on('end', function(){
       call.end();
     })
-    call.on('error', function(e){
+    call.on('error', function(e){ //handle errors
       console.log(e)
     })
 }//contactSupport
@@ -264,22 +290,32 @@ function contactSupport(call){
 //customerFeedback
 function customerFeedback(call, callback){
 
-  var feedback = call.request.feedback;
-  console.log("Logging the following feedback: "+feedback);
+  var feedback = call.request.feedback; //extract data from call
+  console.log("Logging the following feedback: "+feedback); //logging for clarity and so the feedback is logged somewhere
 
 
   callback(null, {
-    msg: "Your feedback has been received, thank you"
+    msg: "Your feedback has been received, thank you" //send this back to the client
   })
 }//customerFeedback
 
 // ********** ASSISSTANCE SERVICE ********** //
 
+const shopTills = [ //array of data about the tills that will be sent to the client
+  //each till number has a randomly generated number of minutes wait time (between 0 and 9)
+    { tillNumber: 1, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 2, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 3, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 4, waitTime: Math.floor(Math. random()*10) },
+    { tillNumber: 5, waitTime: Math.floor(Math. random()*10) }
+
+];
+
 //queueTime
 function queueTime(call, callback){
 
   for (var i = 0; i < shopTills.length; i++) {
-    call.write({
+    call.write({ //using a loop to send this data back to the client
       tillNumber: shopTills[i].tillNumber,
       waitTime: shopTills[i].waitTime
     });
@@ -289,22 +325,23 @@ function queueTime(call, callback){
 
 //unlockTrolley
 function unlockTrolley(call, callback){
-  var trolleyNumber = call.request.trolleyNumber
-  if(isNaN(trolleyNumber)){
+  var trolleyNumber = call.request.trolleyNumber //extract data from call
+  if(isNaN(trolleyNumber)){ //needs to be a number
     unlockMsg = "This trolley is unavailable, please try a different trolley number"
   } else{
     unlockMsg = "Trolley is unlocked, happy shopping!"
   }
   callback(null, {
-    unlockMsg:unlockMsg
+    unlockMsg:unlockMsg //send response back to the client
   })
 }//unlockTrolley
 
 //locateCar
 function locateCar(call, callback){
 
-  var carReg = call.request.carReg
-  console.log(carReg)
+  var carReg = call.request.carReg //extract data from call
+  console.log(carReg) //print for clarity
+  //testing out few different options
   if(carReg > 0 && carReg < 100){
     parkingSpace = "You are parked in space number 23"
   }
@@ -318,7 +355,7 @@ function locateCar(call, callback){
     parkingSpace = "Unable to locate your car in the car park, please try again"
   }
   callback(null, {
-    parkingSpace:parkingSpace
+    parkingSpace:parkingSpace //send this back to the client
   })
 }//locateCar
 

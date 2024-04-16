@@ -6,62 +6,72 @@
   </head>
   <body>
     <h1><%= title %></h1>
+
+
+    <h2>Retail Service</h2>
+    <ul>
+    <a href="/addToCart"><li>Add To Cart</li></a>
+    <a href="/removeFromCart"><li>Remove From Cart</li></a>
+    <a href="/totalValue"><li>Total Value</li></a>
+    <a href="/applyDiscount"><li>Apply Discount</li></a>
+    <a href="/processPayment"><li>Process Payment</li></a>
+    </ul>
+
+    <br/>
+    <h2>Query Service</h2>
+    <ul>
+      <a href="/priceLookUp"><li>Price Look Up</li></a>
+      <a href="/findProduct"><li>Find Product</li></a>
+      <a href="/allergyInfo"><li>Allergy Information</li></a>
+      <a href="/contactSupport"><li>Contact Support</li></a>
+      <a href="/customerFeedback"><li>Customer Feedback</li></a>
+    </ul>
+
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="input" autocomplete="off" /><button>Send</button>
     </form>
-    <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
-
-    <script>
-      var socket = io("ws://localhost:3000/");
-
-      var messages = document.getElementById('messages');
-      var form = document.getElementById('form');
-      var input = document.getElementById('input');
-
-      form.addEventListener('submit', function(e) {
-        e.preventDefault();
-        if (input.value) {
-          socket.emit('chat message', input.value);
-          input.value = '';
-        }
-      });
-
-      socket.on('chat message', function(msg) {
-        var item = document.createElement('li');
-        item.textContent = msg;
-        messages.appendChild(item);
-
-
-        window.scrollTo(0, document.body.scrollHeight);
-      });
-    </script>
-
-    <h2>Retail Service</h2>
-    <a href="/addToCart">Add To Cart</a>
-    <a href="/removeFromCart">Remove From Cart</a>
-    <a href="/totalValue">Total Value</a>
-    <a href="/applyDiscount">Apply Discount</a>
-    <a href="/processPayment">Process Payment</a>
-
-    <br/>
-    <h2>Query Service</h2>
-    <a href="/priceLookUp">Price Look Up</a>
-    <a href="/findProduct">Find Product</a>
-    <a href="/allergyInfo">Allergy Information</a>
-    <a href="/contactSupport">Contact Support</a>
-    <a href="/customerFeedback">Customer Feedback</a>
 
     <br/>
     <h2>Assisstance Service</h2>
-    <a href="/queueTime">See Queue Times</a>
-    <a href="/unlockTrolley">Unlock Trolley</a>
-    <a href="/locateCar">Locate Car</a>
+    <ul>
+      <a href="/queueTime"><li>See Queue Times</li></a>
+      <a href="/unlockTrolley"><li>Unlock Trolley</li></a>
+      <a href="/locateCar"><li>Locate Car</li></a>
+    </ul>
     <br/>
     <br/>
     <br/>
     <br/>
     <a href="/">Return to home page</a>
+
+
+        <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
+
+        <script>
+          var socket = io("ws://localhost:8081/");
+
+          var messages = document.getElementById('messages');
+          var form = document.getElementById('form');
+          var input = document.getElementById('input');
+
+          form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (input.value) {
+              socket.emit('chat message', input.value);
+              input.value = '';
+            }
+          });
+
+          socket.on('chat message', function(msg) {
+            var item = document.createElement('li');
+            item.textContent = msg;
+            messages.appendChild(item);
+
+
+            window.scrollTo(0, document.body.scrollHeight);
+          });
+        </script>
 
   </body>
 </html>

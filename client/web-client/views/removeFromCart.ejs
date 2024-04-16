@@ -7,46 +7,53 @@
   <body>
     <h1><%= title %></h1>
 
-    <% if(error) { %>
-      <%= error %>
-    <% } %>
 
-    <form action="/removeFromCart" method="get">
-      <label for="name">Name of Product</label>
-      <input type="text" name="name">
-      <br/>
-      <button type="submit">Remove!</button>
-    </form>
+    <h2>Retail Service</h2>
+    <ul>
+    <a href="/addToCart"><li>Add To Cart</li></a>
+    <a href="/removeFromCart"><li>Remove From Cart</li></a>
+    <a href="/totalValue"><li>Total Value</li></a>
+    <a href="/applyDiscount"><li>Apply Discount</li></a>
+    <a href="/processPayment"><li>Process Payment</li></a>
+    </ul>
 
-    <% if (typeof removeMsg === 'string') { %>
-    <b><%= removeMsg %>
-<% } %></b>
+        <% if(error) { %>
+          <%= error %>
+        <% } %>
 
-<h2>Retail Service</h2>
-<a href="/addToCart">Add To Cart</a>
-<a href="/removeFromCart">Remove From Cart</a>
-<a href="/totalValue">Total Value</a>
-<a href="/applyDiscount">Apply Discount</a>
-<a href="/processPayment">Process Payment</a>
+        <form action="/removeFromCart" method="get">
+          <label for="name">Name of Product</label>
+          <input type="text" name="name">
+          <br/>
+          <button type="submit">Remove!</button>
+        </form>
 
-<br/>
-<h2>Query Service</h2>
-<a href="/priceLookUp">Price Look Up</a>
-<a href="/findProduct">Find Product</a>
-<a href="/allergyInfo">Allergy Information</a>
-<a href="/contactSupport">Contact Support</a>
-<a href="/customerFeedback">Customer Feedback</a>
+        <% if (typeof removeMsg === 'string') { %>
+        <b><%= removeMsg %>
+    <% } %></b>
 
-<br/>
-<h2>Assisstance Service</h2>
-<a href="/queueTime">See Queue Times</a>
-<a href="/unlockTrolley">Unlock Trolley</a>
-<a href="/locateCar">Locate Car</a>
-<br/>
-<br/>
-<br/>
-<br/>
-<a href="/">Return to home page</a>
+    <br/>
+    <h2>Query Service</h2>
+    <ul>
+    <a href="/addToCart"><li>Add To Cart</li></a>
+    <a href="/removeFromCart"><li>Remove From Cart</li></a>
+    <a href="/totalValue"><li>Total Value</li></a>
+    <a href="/applyDiscount"><li>Apply Discount</li></a>
+    <a href="/processPayment"><li>Process Payment</li></a>
+    </ul>
+
+    <br/>
+    <h2>Assisstance Service</h2>
+    <ul>
+      <a href="/queueTime"><li>See Queue Times</li></a>
+      <a href="/unlockTrolley"><li>Unlock Trolley</li></a>
+      <a href="/locateCar"><li>Locate Car</li></a>
+    </ul>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <a href="/">Return to home page</a>
 
   </body>
 </html>
