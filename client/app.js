@@ -21,34 +21,34 @@ var clientAssisstance = new assisstance_proto.Assisstance("0.0.0.0:40000", grpc.
 //retail service
 
 function addToCart(call) {
-  while (true) {
-    var name = readlineSync.question("What is the name of the item? (Type 'q' to Quit): ");
+  while (true) { //keep asking user until they quit
+    var name = readlineSync.question("What is the name of the item? (Type 'q' to Quit): "); //take in value for name
     if (name.toLowerCase() === "q") {
       break;
     }
-    var price = parseFloat(readlineSync.question("How much does the item cost?: "));
+    var price = parseFloat(readlineSync.question("How much does the item cost?: ")); //take in value for price
 
-    call.write({
+    call.write({ //write data to the call object
       name: name,
       price: price
     });
   }
 
-  call.end();
+  call.end(); //when user presses 'q' call will end
 }
 
-var call = client.addToCart(function(error, response) {
-  if (error) {
+var call = client.addToCart(function(error, response) { //call the grpc method
+  if (error) { //handle errors
     console.error("An error occurred: " + error);
   } else {
-    console.log("Response: " + response.msg);
+    console.log("Response: " + response.msg); //display response
   }
 });
 
 function removeFromCart(){
-  var name = readlineSync.question("What is the name of the item you wish to remove?: ")
+  var name = readlineSync.question("What is the name of the item you wish to remove?: ") //get data for name
   try{
-      client.removeFromCart({
+      client.removeFromCart({ //try call grpc method
         name:name
       }, function(error, response){
         try{
@@ -59,7 +59,7 @@ function removeFromCart(){
             console.log(response.removeMsg)
           }
         }
-        catch(e){
+        catch(e){ //handle errors
           console.log("server issue")
         }
       })
@@ -69,70 +69,70 @@ function removeFromCart(){
 }
 
 function totalValue() {
-  client.totalValue({}, function(error, response) {
-    if (error) {
+  client.totalValue({}, function(error, response) { //call the grpc method
+    if (error) { //handle errors
       console.error("An error occurred: ", error);
       return;
     }
 
-    if (response.total) {
-      response.total = Math.round((response.total + Number.EPSILON) * 100) / 100
-      console.log("Your total is €" + response.total);
+    if (response.total) { //if total isn't null
+      response.total = Math.round((response.total + Number.EPSILON) * 100) / 100 //round up to two decimal places
+      console.log("Your total is €" + response.total); //display total to user
     } else {
-      console.log("There is nothing in your cart");
+      console.log("There is nothing in your cart"); //exception handling
     }
   });
 }
 
 function applyDiscount(){
   try{
-    client.applyDiscount({}, function(error, response){
+    client.applyDiscount({}, function(error, response){ //try call the grpc method
       try{
-          console.log(response.discountConf)
+          console.log(response.discountConf) //display response message
         }
         catch(e){
-          console.log(error)
+          console.log(error) //handle errors
         }
       }
 
     )
   }
-  catch(e){
+  catch(e){ //handle errors
     console.log("Error occured applying discount")
   }
 }
 
 function processPayment(){
-  var cardNo = readlineSync.question("Please enter your 16 digit card number: ")
+  var cardNo = readlineSync.question("Please enter your 16 digit card number: ") //take in value for card no
   try{
-    client.processPayment({
+    client.processPayment({ //try call the grpc method
       cardNo:cardNo
     }, function(error, response){
       try{
-        if(response.paymentConfirmation){
+        if(response.paymentConfirmation){ //display payment confirmation
           console.log(response.paymentConfirmation)
         }
         else{
           console.log(response.paymentConfirmation)
         }
       }
-      catch(e){
+      catch(e){ //handle errors
         console.log(e)
         console.log("server error")
       }
 
     } )
   }
-  catch(e){
+  catch(e){ //handle errors
     console.log("Error occured")
     console.log(e);
   }
 }
 
 function priceLookUp(){
-  var name = readlineSync.question("Please enter the name of the product you want to look up: ")
+  var name = readlineSync.question("Please enter the name of the product you want to look up: ") //take in data for name
 
-    clientQuery.priceLookUp({
+    clientQuery.priceLookUp({ //call the grpc method
       name: name
     }, function (error, response) {
       try{
@@ -143,7 +143,7 @@ function priceLookUp(){
           console.log("Error here")
         }
       }
-      catch(e){
+      catch(e){ //handle errors
         console.log(e)
         console.log("error occured")
       }
@@ -153,9 +153,9 @@ function priceLookUp(){
 }
 
 function findProduct(){
-  var name = readlineSync.question("Please enter the name of the product you want to locate: ")
+  var name = readlineSync.question("Please enter the name of the product you want to locate: ") //take in data for name
 
-    clientQuery.findProduct({
+    clientQuery.findProduct({ //try call the grpc method
       name: name
     }, function (error, response) {
       try{
@@ -166,7 +166,7 @@ function findProduct(){
           console.log("Error occured")
         }
       }
-      catch(e){
+      catch(e){ //handle errors
         console.log(e)
         console.log("error occured")
       }
@@ -176,26 +176,26 @@ function findProduct(){
 }
 
 function allergyInfo(){
-  var call = clientQuery.allergyInfo({});
-  call.on('data', function(response) {
+  var call = clientQuery.allergyInfo({}); //call the grpc method using call
+  call.on('data', function(response) { //when you get data, display it below
     console.log("If you have a " + response.allergy + " allergy, please avoid the following products: " + response.products);
   });
 }
 
 function contactSupport() {
-    var call = clientQuery.contactSupport();
-    var name = readlineSync.question("What is your name?: ")
+    var call = clientQuery.contactSupport(); //call grpc method using call
+    var name = readlineSync.question("What is your name?: ") //take in data for name
 
-    call.on('data', function(resp){
+    call.on('data', function(resp){ //when call receives data, display at in the below format
       console.log(resp.name + ": "+resp.message)
     });
 
     call.on('end', function(){})
 
     call.on('error', function(e){
-      console.log("Cannot connect to the Chat Service ")
+      console.log("Cannot connect to the Chat Service ") //handle errors
     })
-    call.write({
+    call.write({ //when someone joins the chat
       message: name+" has joined the chat",
       name: name
     })
@@ -206,16 +206,16 @@ function contactSupport() {
     })
 
     rl.on("line", function(message){
-      if(message.toLowerCase() === 'quit'){
+      if(message.toLowerCase() === 'quit'){ //handle quitting the chat
         call.write({
-          message: name + " left the chatroom",
+          message: name + " left the chatroom", //quitting display message
           name: name
         })
-        call.end();
-        rl.close();
+        call.end(); //end the call
+        rl.close(); //and close readline
       }
 
-      else{
+      else{ //actually sending messages
         call.write({
           message: message,
           name: name
@@ -226,8 +226,8 @@ function contactSupport() {
 }
 
 function customerFeedback() {
-  var feedback = readlineSync.question("Please enter your feedback here: ")
-  clientQuery.customerFeedback({
+  var feedback = readlineSync.question("Please enter your feedback here: ") //take in feedback
+  clientQuery.customerFeedback({ //try call grpc method
       feedback: feedback
   }, function(error, response) {
     try {
@@ -236,7 +236,7 @@ function customerFeedback() {
       } else {
         console.log("Error occurred");
       }
-    } catch (e) {
+    } catch (e) { //handle errors
       console.log(e);
       console.log("Error here");
     }
@@ -244,8 +244,8 @@ function customerFeedback() {
 }
 
 function queueTime(){
-  var call = clientAssisstance.queueTime({});
-  call.on('data', function(response) {
+  var call = clientAssisstance.queueTime({}); //call the grpc method using call
+  call.on('data', function(response) { //when you receive data display it as below
     console.log("Till number " + response.tillNumber + ", wait time is " + response.waitTime+" minutes");
   });
 }
@@ -253,7 +253,7 @@ function queueTime(){
 function unlockTrolley() {
 
   var trolleyNumber = readlineSync.question("Please enter the number of the trolley you want to unlock: ");
-  // Call unlockTrolley method with correct arguments
+  //call unlockTrolley method with correct arguments
   var call = clientAssisstance.unlockTrolley({ trolleyNumber: trolleyNumber }, function(err, response) {
     if (err) {
       console.error(err);
@@ -265,9 +265,9 @@ function unlockTrolley() {
 
 function locateCar(){
 
-  var carReg = readlineSync.question("Please enter your car reg number: ")
+  var carReg = readlineSync.question("Please enter your car reg number: ") //take in car reg
 
-  var call = clientAssisstance.locateCar({ carReg: carReg }, function(err, response) {
+  var call = clientAssisstance.locateCar({ carReg: carReg }, function(err, response) { //call grpc method
     if (err) {
       console.error(err);
       return;
@@ -276,8 +276,7 @@ function locateCar(){
   });
 }
 
-//1234567812345678
-  var chooseService = readlineSync.question(
+  var chooseService = readlineSync.question( //opening display message for user 
     "\n"
     +"******************** Welcome to the Automated Kiosk! ********************\n"
     +"\n"
